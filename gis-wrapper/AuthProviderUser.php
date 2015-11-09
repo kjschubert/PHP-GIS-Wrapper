@@ -28,11 +28,6 @@ class AuthProviderUser implements AuthProvider {
     private $_token;
 
     /**
-     * @var timestamp
-     */
-    private $_expires_at;
-
-    /**
      * @param String $user username of the user
      * @param String $pass password of the user
      */
@@ -46,11 +41,7 @@ class AuthProviderUser implements AuthProvider {
      * @covers \GIS\AuthProviderUser::generateNewToken
      */
     public function getToken() {
-        if($this->_expires_at > time()) {
-            return $this->_token;
-        } else {
-            return $this->getNewToken();
-        }
+        return $this->_token;
     }
 
     /**
@@ -60,9 +51,7 @@ class AuthProviderUser implements AuthProvider {
      * @covers \GIS\AuthProviderUser::generateNewToken
      */
     public function getNewToken() {
-        $tmp = $this->generateNewToken();
-        $this->_token = $tmp->access_token;
-        $this->_expires_at = @strtotime($tmp->expires_at);
+        $this->_token = $this->generateNewToken();
 
         return $this->_token;
     }
@@ -94,7 +83,7 @@ class AuthProviderUser implements AuthProvider {
         preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $res, $cookies);
         foreach($cookies[1] as $c) {
             parse_str($c, $cookie);
-            if(isset($cookie["aiesec_token"])) $token = json_decode($cookie["aiesec_token"])->token;
+            if(isset($cookie["expa_token"])) $token = trim($cookie["expa_token"]);
         }
 
         if($token !== false && $token !== null) {
