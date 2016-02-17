@@ -33,7 +33,7 @@ class GIS {
      * @throws \GIS\InvalidSwaggerFormatException if the ressource at $apidoc does not fit the swagger format or does not contain any api
      * @throws \GIS\RequirementsException if the API can not produce JSON
      */
-    function __construct($auth, $apidoc = "https://gis-api.aiesec.org/v1/docs.json") {
+    function __construct($auth, $apidoc = "https://gis-api.aiesec.org/v2/docs.json") {
         // check that $auth implements the AuthProvider interface
         if( $auth instanceof AuthProvider ) {
             $this->_auth = $auth;
