@@ -10,7 +10,7 @@ require_once( dirname(__FILE__) . '/API.php' );
  *
  * dynamic GIS API wrapper class
  *
- * @author Karl Johann Schubert <karljohann.schubert@aiesec.de>
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
  * @version 0.1
  * @package GIS
  *

@@ -314,6 +314,8 @@ class Endpoint implements \Iterator {
                 if($res == null) throw new InvalidAPIResponseException("Invalid Response on " . $url . "access_token=" . $token);
 
                 if(isset($res->status->code) && $res->status->code != "200") throw new InvalidAPIResponseException($res->status->message);
+            } else if($res->status->code == "403" && $res->status->message == "Active role required to view this content.") {
+                throw new ActiveRoleRequiredException("Active role required to view this content. This mostly happens when an non-active person login through EXPA. URL: " . $url . "access_token=" . $token . "");
             } else {
                 throw new InvalidAPIResponseException($res->status->message);
             }

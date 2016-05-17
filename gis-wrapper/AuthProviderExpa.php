@@ -4,13 +4,13 @@ namespace GIS;
 require_once( dirname(__FILE__) . '/AuthProvider.php' );
 
 /**
- * Class AuthProviderUser
+ * Class AuthProviderExpa
  *
- * @author Karl Johann Schubert <karljohann.schubert@aiesec.de>
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
  * @version 0.1
  * @package GIS
  */
-class AuthProviderUser implements AuthProvider {
+class AuthProviderExpa implements AuthProvider {
 
     /**
      * @var String
@@ -41,7 +41,11 @@ class AuthProviderUser implements AuthProvider {
      * @covers \GIS\AuthProviderUser::generateNewToken
      */
     public function getToken() {
-        return $this->_token;
+        if($this->_token != null && $this->_expires_at > time()) {
+            return $this->_token;
+        } else {
+            return $this->getNewToken();
+        }
     }
 
     /**
@@ -51,7 +55,7 @@ class AuthProviderUser implements AuthProvider {
      * @covers \GIS\AuthProviderUser::generateNewToken
      */
     public function getNewToken() {
-        $this->_token = $this->generateNewToken();
+        $this->generateNewToken();
 
         return $this->_token;
     }
@@ -61,7 +65,7 @@ class AuthProviderUser implements AuthProvider {
      *
      * function that performs a login with GIS auth to get a new access token
      *
-     * @return String access token
+     * @return void
      * @throws \GIS\InvalidCredentialsException if the username or password is invalid
      * @throws \GIS\InvalidAuthResponseException if the response does not contain the access token
      */
@@ -78,16 +82,26 @@ class AuthProviderUser implements AuthProvider {
         $res = curl_exec($req);
         curl_close($req);
 
-        // get token cookie;
-        $token = false;
-        preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $res, $cookies);
+        // get token and expiration date from cookies;
+        $token = $expire = false;
+        preg_match_all('/^Set-Cookie:\s*([^\n]*)/mi', $res, $cookies);
         foreach($cookies[1] as $c) {
-            parse_str($c, $cookie);
-            if(isset($cookie["expa_token"])) $token = trim($cookie["expa_token"]);
+            $c = explode('; ', $c);
+            foreach($c as $cookie) {
+                parse_str($cookie, $cookie);
+                if(isset($cookie["expa_token"])) $token = trim($cookie["expa_token"]);
+                if(isset($cookie["Expires"])) $expire = @strtotime($cookie["Expires"]);
+            }
         }
 
         if($token !== false && $token !== null) {
-            return $token;
+            $this->_token = $token;
+            if($expire !== false && $expire > 0) {
+                $this->_expires_at = $expire;
+            } else {
+                // if we can not parse the expiration date, assume 1h
+                $this->_expires_at = time() + 3600;
+            }
         } else  {
             if(strpos($res, "<h2>Invalid email or password.</h2>") !== false) {
                 throw new InvalidCredentialsException("Invalid email or password");

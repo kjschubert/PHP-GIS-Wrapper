@@ -8,7 +8,7 @@ require_once( dirname(__FILE__) . '/Endpoint.php' );
  *
  * class to factory an API object
  *
- * @author Karl Johann Schubert <karljohann.schubert@aiesec.de>
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
  * @version 0.1
  * @package GIS
  */
@@ -33,7 +33,7 @@ class APIFactory {
  *
  * provides an API without an root endpoint
  *
- * @author Karl Johann Schubert <karljohann.schubert@aiesec.de>
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
  * @version 0.1
  * @package GIS
  */
@@ -381,7 +381,7 @@ class API {
  *
  * extends the API class by implementing the Iterator interface for those APIs with an root endpoint
  *
- * @author Karl Johann Schubert <karljohann.schubert@aiesec.de>
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
  * @version 0.1
  * @package GIS
  */
