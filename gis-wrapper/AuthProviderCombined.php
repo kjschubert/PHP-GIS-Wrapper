@@ -38,12 +38,19 @@ class AuthProviderCombined implements AuthProvider {
     private $_type;
 
     /**
+     * @var bool
+     */
+    private $_verifyPeer = true;
+
+    /**
      * @param String $user username of the user
      * @param String $pass password of the user
+     * @param bool $SSLVerifyPeer set curl option verify ssl peer (default true)
      */
-    function __construct($user, $pass) {
+    function __construct($user, $pass, $SSLVerifyPeer = true) {
         $this->_username = $user;
         $this->_password = $pass;
+        $this->_verifyPeer = $SSLVerifyPeer;
     }
 
     /**
@@ -118,6 +125,7 @@ class AuthProviderCombined implements AuthProvider {
         curl_setopt($req, CURLOPT_HEADER, 1);
         curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($req, CURLOPT_COOKIEFILE, "");
+        curl_setopt($req, CURLOPT_SSL_VERIFYPEER, $this->_verifyPeer);
         $res = curl_exec($req);
 
         // get token and expiration date from cookies;
@@ -136,6 +144,7 @@ class AuthProviderCombined implements AuthProvider {
             // try to get current person to check if token is valid
             $req2 = curl_init('https://gis-api.aiesec.org/v2/current_person.json?access_token=' . $token);
             curl_setopt($req2, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($req2, CURLOPT_SSL_VERIFYPEER, $this->_verifyPeer);
             try {
                 $current_person = json_decode(curl_exec($req2));
             } catch (Exception $e) {

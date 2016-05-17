@@ -33,12 +33,19 @@ class AuthProviderOP implements AuthProvider {
     private $_expires_at;
 
     /**
+     * @var bool
+     */
+    private $_verifyPeer = true;
+
+    /**
      * @param String $user username of the user
      * @param String $pass password of the user
+     * @param bool $SSLVerifyPeer set curl option verify ssl peer (default true)
      */
-    function __construct($user, $pass) {
+    function __construct($user, $pass, $SSLVerifyPeer = true) {
         $this->_username = $user;
         $this->_password = $pass;
+        $this->_verifyPeer = $SSLVerifyPeer;
     }
 
     /**
@@ -83,6 +90,7 @@ class AuthProviderOP implements AuthProvider {
         curl_setopt($req, CURLOPT_HEADER, 1);
         curl_setopt($req, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($req, CURLOPT_COOKIEFILE, "");
+        curl_setopt($req, CURLOPT_SSL_VERIFYPEER, $this->_verifyPeer);
         curl_exec($req);
 
         // perform login on gis identity while keeping session cookie
