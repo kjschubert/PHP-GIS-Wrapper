@@ -73,6 +73,13 @@ class AuthProviderOP implements AuthProvider {
     }
 
     /**
+     * @return date
+     */
+    public function getExpiresAt() {
+        return $this->_expires_at;
+    }
+
+    /**
      * generateNewToken()
      *
      * function that performs a login with GIS auth to get a new access token

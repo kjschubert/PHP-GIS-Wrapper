@@ -28,6 +28,11 @@ class AuthProviderExpa implements AuthProvider {
     private $_token;
 
     /**
+     * @var timestamp
+     */
+    private $_expires_at;
+
+    /**
      * @var bool
      */
     private $_verifyPeer = true;
@@ -65,6 +70,13 @@ class AuthProviderExpa implements AuthProvider {
         $this->generateNewToken();
 
         return $this->_token;
+    }
+
+    /**
+     * @return date
+     */
+    public function getExpiresAt() {
+        return $this->_expires_at;
     }
 
     /**

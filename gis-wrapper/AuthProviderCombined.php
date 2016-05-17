@@ -28,6 +28,11 @@ class AuthProviderCombined implements AuthProvider {
     private $_token;
 
     /**
+     * @var timestamp
+     */
+    private $_expires_at;
+
+    /**
      * @var String
      */
     private $_currentPerson;
@@ -78,6 +83,13 @@ class AuthProviderCombined implements AuthProvider {
     }
 
     /**
+     * @return date
+     */
+    public function getExpiresAt() {
+        return $this->_expires_at;
+    }
+
+    /**
      * @return String
      */
     public function getCurrentPerson() {
@@ -110,9 +122,9 @@ class AuthProviderCombined implements AuthProvider {
      *
      * function that performs a login with GIS auth to get a new access token
      *
-     * @return void
-     * @throws \GIS\InvalidCredentialsException if the username or password is invalid
-     * @throws \GIS\InvalidAuthResponseException if the response does not contain the access token
+     * @throws InvalidAPIResponseException if current person endpoint respond invalid data
+     * @throws InvalidAuthResponseException if the response does not contain the access token
+     * @throws InvalidCredentialsException if the username or password is invalid
      */
     private function generateNewToken() {
         $this->_type = true;
