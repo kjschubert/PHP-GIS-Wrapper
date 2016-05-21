@@ -149,7 +149,7 @@ class AuthProviderCombined implements AuthProvider {
         $this->_type = true;
         $data = "user%5Bemail%5D=" . urlencode($this->_username) . "&user%5Bpassword%5D=" . urlencode($this->_password);
 
-        if($this->_session == "") {
+        if($this->_session == "" || !file_exists($this->_session)) {
             $req = curl_init('https://auth.aiesec.org/users/sign_in');
             curl_setopt($req, CURLOPT_POST, true);
             curl_setopt($req, CURLOPT_POSTFIELDS, $data);
