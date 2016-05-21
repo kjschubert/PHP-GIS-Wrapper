@@ -48,6 +48,11 @@ class AuthProviderCombined implements AuthProvider {
     private $_verifyPeer = true;
 
     /**
+     * @var String
+     */
+    private $_session = "";
+
+    /**
      * @param String $user username of the user
      * @param String $pass password of the user
      * @param bool $SSLVerifyPeer set curl option verify ssl peer (default true)
@@ -118,6 +123,20 @@ class AuthProviderCombined implements AuthProvider {
     }
 
     /**
+     * @return String session filename
+     */
+    public function getSession() {
+        return $this->_session;
+    }
+
+    /**
+     * @param $session session filename
+     */
+    public function setSession($session) {
+        $this->_session = strval($session);
+    }
+
+    /**
      * generateNewToken()
      *
      * function that performs a login with GIS auth to get a new access token
@@ -130,14 +149,19 @@ class AuthProviderCombined implements AuthProvider {
         $this->_type = true;
         $data = "user%5Bemail%5D=" . urlencode($this->_username) . "&user%5Bpassword%5D=" . urlencode($this->_password);
 
-        $req = curl_init('https://auth.aiesec.org/users/sign_in');
-        curl_setopt($req, CURLOPT_POST, true);
-        curl_setopt($req, CURLOPT_POSTFIELDS, $data);
+        if($this->_session == "") {
+            $req = curl_init('https://auth.aiesec.org/users/sign_in');
+            curl_setopt($req, CURLOPT_POST, true);
+            curl_setopt($req, CURLOPT_POSTFIELDS, $data);
+        } else {
+            $req = curl_init('https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fexperience.aiesec.org%2Fsign_in&response_type=code&client_id=349321fd15814e9fdd2c5abe062a6fb10a27a95dd226fce287adb6c51d3de3df');
+        }
         curl_setopt($req, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($req, CURLOPT_HEADER, 1);
         curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($req, CURLOPT_COOKIEFILE, "");
         curl_setopt($req, CURLOPT_SSL_VERIFYPEER, $this->_verifyPeer);
+        curl_setopt($req, CURLOPT_COOKIEFILE, $this->_session);
+        curl_setopt($req, CURLOPT_COOKIEJAR, $this->_session);
 
         // get token and expiration date from cookies;
         $attempts = 0;
@@ -154,6 +178,13 @@ class AuthProviderCombined implements AuthProvider {
                 }
             }
             $attempts++;
+
+            // if we didn't got a token assume that the session is invalid and change to request to login
+            if(!$token) {
+                curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/users/sign_in');
+                curl_setopt($req, CURLOPT_POST, true);
+                curl_setopt($req, CURLOPT_POSTFIELDS, $data);
+            }
         }
 
         if($token != false) {
