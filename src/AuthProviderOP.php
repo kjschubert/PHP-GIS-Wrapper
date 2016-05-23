@@ -7,8 +7,8 @@ require_once( dirname(__FILE__) . '/AuthProvider.php' );
  * Class AuthProviderOP
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
 class AuthProviderOP implements AuthProvider {
 
