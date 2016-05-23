@@ -12,8 +12,8 @@ namespace GISwrapper;
  * Class InvalidAuthProviderException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
 class InvalidAuthProviderException extends \Exception {}
 
@@ -21,8 +21,8 @@ class InvalidAuthProviderException extends \Exception {}
  * Class InvalidCredentialsException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
 class InvalidCredentialsException extends \Exception {}
 
@@ -30,61 +30,47 @@ class InvalidCredentialsException extends \Exception {}
  * Class InvalidAuthResponseException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
 class InvalidAuthResponseException extends \Exception {}
 
+/**
+ * Class NoResponseException
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @version 0.2
+ * @package GISwrapper
+ */
+class NoResponseException extends \Exception {}
 
 /**
  * Class InvalidSwaggerFormatException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
 class InvalidSwaggerFormatException extends \Exception {}
 
-
 /**
- * Class InvalidAPIException
+ * Class RequirementsException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
- */
-class InvalidAPIException extends \Exception {}
-
-
-/**
- * Class InvalidAPIPathException
- *
- * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
- */
-class InvalidAPIPathException extends \Exception {}
-
-
-/**
- * Class EndpointDuplicationException
- *
- * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
- */
-class EndpointDuplicationException extends \Exception {}
-
-
-/**
- * Class EndpointDuplicationException
- *
- * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
 class RequirementsException extends \Exception {}
 
+/**
+ * Class OperationNotAvalableException
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @version 0.2
+ * @package GISwrapper
+ */
+class OperationNotAvailableException extends \Exception {}
+
 
 /**
  * Class EndpointDuplicationException
@@ -93,7 +79,7 @@ class RequirementsException extends \Exception {}
  * @version 0.1
  * @package GIS
  */
-class RequirementInvalidEndpointException extends \Exception {}
+//class RequirementInvalidEndpointException extends \Exception {}
 
 
 /**
@@ -103,7 +89,7 @@ class RequirementInvalidEndpointException extends \Exception {}
  * @version 0.1
  * @package GIS
  */
-class InvalidMasterException extends \Exception {}
+//class InvalidMasterException extends \Exception {}
 
 
 /**
@@ -113,15 +99,15 @@ class InvalidMasterException extends \Exception {}
  * @version 0.1
  * @package GIS
  */
-class InvalidChangeException extends \Exception {}
+//class InvalidChangeException extends \Exception {}
 
 
 /**
  * Class ParameterRequiredException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
 class ParameterRequiredException extends \Exception {}
 
@@ -133,7 +119,7 @@ class ParameterRequiredException extends \Exception {}
  * @version 0.1
  * @package GIS
  */
-class InvalidAPIResponseException extends \Exception {}
+//class InvalidAPIResponseException extends \Exception {}
 
 /**
  * Class ActiveRoleRequiredException
@@ -142,4 +128,4 @@ class InvalidAPIResponseException extends \Exception {}
  * @version 0.1
  * @package GIS
  */
-class ActiveRoleRequiredException extends \Exception {}
+//class ActiveRoleRequiredException extends \Exception {}

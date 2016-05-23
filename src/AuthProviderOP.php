@@ -1,7 +1,5 @@
 <?php
-namespace GIS;
-
-require_once( dirname(__FILE__) . '/AuthProvider.php' );
+namespace GISwrapper;
 
 /**
  * Class AuthProviderOP
@@ -132,7 +130,7 @@ class AuthProviderOP implements AuthProvider {
                 }
 
                 if($success) {
-                    proceed($res);
+                    $this->proceedToken($res);
                 } else {
                     throw new InvalidAuthResponseException("Could not login.");
                 }
@@ -154,7 +152,7 @@ class AuthProviderOP implements AuthProvider {
                 if($res !== false) {
                     // if successful, check for token
                     try {
-                        proceed($res);
+                        $this->proceedToken($res);
                         $success = true;
                     } catch (InvalidAuthResponseException $e) {
                         // if there was no token, this can mean that the session was invalid, thereby send the login credentials
@@ -169,34 +167,34 @@ class AuthProviderOP implements AuthProvider {
                 $attempts++;
             }
         }
+    }
 
-        function proceed($res) {
-            // get token cookie;
-            $token = $expire = false;
-            preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $res, $cookies);
-            foreach($cookies[1] as $c) {
-                parse_str($c, $cookie);
-                if(isset($cookie["aiesec_token"])) {
-                    $content = json_decode($cookie["aiesec_token"]);
-                    $token = $content->token->access_token;
-                    $expire = @strtotime($content->token->expires_at);
-                }
+    private function proceedToken($res) {
+        // get token cookie;
+        $token = $expire = false;
+        preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $res, $cookies);
+        foreach($cookies[1] as $c) {
+            parse_str($c, $cookie);
+            if(isset($cookie["aiesec_token"])) {
+                $content = json_decode($cookie["aiesec_token"]);
+                $token = $content->token->access_token;
+                $expire = @strtotime($content->token->expires_at);
             }
+        }
 
-            if($token !== false && $token !== null) {
-                $this->_token = $token;
-                if($expire !== false && $expire > 0) {
-                    $this->_expires_at = $expire;
-                } else {
-                    // if we can not parse the expiration date, assume 1h
-                    $this->_expires_at = time() + 3600;
-                }
-            } else  {
-                if(strpos($res, "<h2>Invalid email or password.</h2>") !== false) {
-                    throw new InvalidCredentialsException("Invalid email or password");
-                } else {
-                    throw new InvalidAuthResponseException("The GIS auth response does not match the requirements.");
-                }
+        if($token !== false && $token !== null) {
+            $this->_token = $token;
+            if($expire !== false && $expire > 0) {
+                $this->_expires_at = $expire;
+            } else {
+                // if we can not parse the expiration date, assume 1h
+                $this->_expires_at = time() + 3600;
+            }
+        } else  {
+            if(strpos($res, "<h2>Invalid email or password.</h2>") !== false) {
+                throw new InvalidCredentialsException("Invalid email or password");
+            } else {
+                throw new InvalidAuthResponseException("The GIS auth response does not match the requirements.");
             }
         }
     }

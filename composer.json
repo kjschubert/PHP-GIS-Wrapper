@@ -1,0 +1,18 @@
+{
+    "name": "kjschubert/php-gis-wrapper",
+    "description": "PHP library to connect your projects with AIESEC's Global Information System",
+    "authors": [
+        {
+            "name": "Karl Johann Schubert",
+            "email": "karljohann@familieschubi.de"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "autoload": {
+        "psr-4": {"GISwrapper\\": "src/"},
+        "files": [
+            "src/Exceptions.php"
+        ]
+    }
+}
