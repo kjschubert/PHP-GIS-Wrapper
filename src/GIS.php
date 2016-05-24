@@ -8,9 +8,8 @@ class GIS
     private $_auth;
     private $_subs;
     private $_cache;
-    private $_apidoc;
 
-    function __construct($auth, $apidoc = "https://gis-api.aiesec.org/v2/docs.json", $cache = null)
+    function __construct($auth, $apidoc = "https://gis-api.aiesec.org/v2/docs.json")
     {
         // check that $auth implements the AuthProvider interface
         if ($auth instanceof AuthProvider) {
@@ -19,14 +18,10 @@ class GIS
             throw new InvalidAuthProviderException("The given object does not implement the AuthProvider interface.");
         }
 
-        // save apidoc url and base path
-        $this->_apidoc = $apidoc;
-
-        // check cache
-        if($cache != null) {
-            $this->_cache = $cache;
+        if(is_array($apidoc)) {
+            $this->_cache = $apidoc;
         } else {
-            $this->_cache = $this->generateSimpleCache();
+            $this->_cache = $this->generateSimpleCache($apidoc);
         }
 
         // initialize array with sub endpoints and apis
@@ -55,9 +50,9 @@ class GIS
         return $this->_cache;
     }
 
-    public function generateSimpleCache() {
+    public function generateSimpleCache($apidoc) {
         $cache = array();
-        $root = $this->loadJSON($this->_apidoc);
+        $root = $this->loadJSON($apidoc);
 
         if($root === false) {
             throw new NoResponseException("Could not load swagger root file");
@@ -76,8 +71,8 @@ class GIS
         return $cache;
     }
 
-    public function generateFullCache() {
-        $cache = $this->generateSimpleCache();
+    public function generateFullCache($apidoc) {
+        $cache = $this->generateSimpleCache($apidoc);
         foreach($cache as $name => $data) {
             if(!is_array($data)) $cache[$name] = $this->proceedSubCache($data, $name);
         }

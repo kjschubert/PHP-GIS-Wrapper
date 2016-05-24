@@ -1,19 +1,20 @@
 <?php
 namespace GISwrapper;
 
-class Endpoint
+class APIEndpoint extends API
 {
     private $_params;
-    private $_pathParams;
-    private $_cache;
-    private $_auth;
+
+    /**
+     * @var int
+     * value for the current page of paged endpoints, declared here for use in the get method
+     */
+    protected $_currentPage;
     
     function __construct($cache, $auth, $pathParams = array())
     {
-        $this->_cache = $cache;
-        $this->_pathParams = $pathParams;
+        parent::__construct($cache, $auth, $pathParams);
         $this->_params = array();
-        $this->_auth = $auth;
     }
 
     public function __isset($name)
@@ -23,7 +24,7 @@ class Endpoint
 
     public function __get($name)
     {
-        if(isset($this->_cache['subs'][$name])) {
+        if(isset($this->_cache['subs'][$name]) && !$this->_params['subs'][$name]['dynamic']) {
             if(!isset($this->_subs[$name])) {
                 $this->_subs[$name] = SubFactory::factory($this->_cache['subs'][$name], $this->_auth);
             }
@@ -62,54 +63,26 @@ class Endpoint
     public function get() {
         if(in_array('GET', $this->_cache['operations'])) {
             if($this->valid('GET')) {
-                // start with endpoint path
-                $url = $this->_cache['path'];
-
-                // replace all dynamic path parts
-                foreach($this->_pathParams as $name => $value) {
-                    $url = str_replace($name, $value, $url);
-                }
-
-                // gather all parameters
-                $data = array();
-                foreach($this->_params as $name => $param) {
-                    $v = $param->getRequestValue('GET');
-                    if($v != null) $data[$name] = $v;
-                }
+                $url = $this->baseUrl();
+                $params = $this->gatherParams('GET');
 
                 // build url
-                if(count($data) > 0) {
-                    $url .= '?' . http_build_query($data) . '&';
+                if(count($params) > 0) {
+                    $url .= '?' . http_build_query($params) . '&';
                 } else {
                     $url .= '?';
                 }
 
-                // try to load
-                $attempts = 0;
-                $res = false;
-                while(!$res && $attempts < 3) {
-                    $res = file_get_contents($url . 'access_token=' . $this->_auth->getToken());
-                    if($res !== false) {
-                        $res = json_decode($res);
-                        if($res !== null) {
-                            if(isset($res->status)) {
-                                if($res->status->code == '401' && $attempts < 2) {
-                                    $res = false;
-                                    $this->_auth->getNewToken();
-                                }
-                            }
-                        } else {
-                            $res = false;
-                        }
-                    }
+                // check if we need to add a page
+                if(isset($this->_currentPage)) {
+                    $url .= 'page=' . $this->_currentPage . '&';
                 }
 
+                // try to load
+                $res = GET::request($url, $this->_auth);
+
                 // validate response
-                if($res === false) {
-                    throw new NoResponseException("Could not load endpoint " . $url);
-                } elseif($res == null) {
-                    throw new InvalidAPIResponseException("Invalid Response on " . $url);
-                } elseif(isset($res->status)) {
+                if(isset($res->status) && isset($res->status->code) && isset($res->status->message)) {
                     if($res->status->code == "403" && $res->status->message == "Active role required to view this content.") {
                         throw new ActiveRoleRequiredException("Active role required to view this content. This mostly happens when an non-active person login through EXPA. URL: " . $url . "access_token=" . $token . "");
                     } else {
@@ -125,13 +98,42 @@ class Endpoint
             throw new OperationNotAvailableException("Operation GET is not available.");
         }
     }
+    
+    public function update() {
+        
+    }
+    
+    public function create() {
+        
+    }
+    
+    public function delete() {
+        
+    }
 
     public function reset() {
         $this->_params = array();
     }
 
-    private function load() {
+    private function baseUrl() {
+        // start with endpoint path
+        $url = $this->_cache['path'];
 
+        // replace all dynamic path parts
+        foreach($this->_pathParams as $name => $value) {
+            $url = str_replace($name, $value, $url);
+        }
+
+        return $url;
     }
 
+    private function gatherParams($operation) {
+        $data = array();
+        foreach($this->_params as $name => $param) {
+            $v = $param->getRequestValue($operation);
+            if($v != null) $data[$name] = $v;
+        }
+
+        return $data;
+    }
 }

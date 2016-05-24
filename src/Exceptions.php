@@ -76,31 +76,10 @@ class OperationNotAvailableException extends \Exception {}
  * Class EndpointDuplicationException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
-//class RequirementInvalidEndpointException extends \Exception {}
-
-
-/**
- * Class InvalidMasterException
- *
- * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
- */
-//class InvalidMasterException extends \Exception {}
-
-
-/**
- * Class InvalidChangeException
- *
- * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
- */
-//class InvalidChangeException extends \Exception {}
-
+class RequirementInvalidEndpointException extends \Exception {}
 
 /**
  * Class ParameterRequiredException
@@ -111,21 +90,20 @@ class OperationNotAvailableException extends \Exception {}
  */
 class ParameterRequiredException extends \Exception {}
 
-
 /**
  * Class InvalidAPIResponseException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
-//class InvalidAPIResponseException extends \Exception {}
+class InvalidAPIResponseException extends \Exception {}
 
 /**
  * Class ActiveRoleRequiredException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
- * @version 0.1
- * @package GIS
+ * @version 0.2
+ * @package GISwrapper
  */
-//class ActiveRoleRequiredException extends \Exception {}
+class ActiveRoleRequiredException extends \Exception {}

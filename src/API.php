@@ -11,29 +11,27 @@ namespace GISwrapper;
 
 class API
 {
-    private $_cache;
-    private $_subs;
+    protected $_cache;
+    protected $_subs;
+    protected $_auth;
+    protected $_pathParams;
 
-    public function __construct($cache)
+    public function __construct($cache, $auth, $pathParams = array())
     {
         $this->_cache = $cache;
+        $this->_subs = array();
+        $this->_auth = $auth;
+        $this->_pathParams = $pathParams;
     }
 
     public function __get($name)
     {
-        if(array_key_exists($name, $this->_subs)) {
-            return $this->_subs[$name];
-        } elseif(array_key_exists($name, $this->_cache)) {
-            if(!is_array($this->_cache[$name])) {
-                $this->_cache[$name] = $this->proceedSubCache($this->_cache[$name]);
+        if(array_key_exists($name, $this->_cache['subs']) && !$this->_cache['subs'][$name]['dynamic']) {
+            if(!isset($this->_subs[$name])) {
+                $this->_subs[$name] = SubFactory::factory($this->_cache['subs'][$name], $this->_auth);
             }
-            if($this->_cache[$name]['endpoint']) {
-                $this->_subs[$name] = new Endpoint($this->_cache[$name]);
-            } else {
-                $this->_subs[$name] = new API($this->_cache[$name]);
-            }
-            return $this->_subs[$name];
         } else {
+            trigger_error("Property " . $name . " does not exist.", E_USER_WARNING);
             return null;
         }
     }
