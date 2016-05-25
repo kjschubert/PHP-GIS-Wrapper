@@ -116,3 +116,12 @@ class ActiveRoleRequiredException extends \Exception {}
  * @package GISwrapper
  */
 class InvalidParameterTypeException extends \Exception {}
+
+/**
+ * Class UnauthorizedException
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @version 0.2
+ * @package GISwrapper
+ */
+class UnauthorizedException extends \Exception {}

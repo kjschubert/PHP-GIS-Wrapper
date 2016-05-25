@@ -109,9 +109,8 @@ class APIEndpoint extends API
                 $params = $this->gatherParams('GET');
 
                 // build url
-                if(count($params) > 0) { print_r($params);
+                if(count($params) > 0) {
                     $params = http_build_query($params);
-                    echo $params;
 
                     // gis hack (replace numerical array keys with no array key
                     $params = preg_replace('/(%5B[0-9]*%5D)/', '%5B%5D', $params);
@@ -131,11 +130,7 @@ class APIEndpoint extends API
 
                 // validate response
                 if(isset($res->status) && isset($res->status->code) && isset($res->status->message)) {
-                    if($res->status->code == "403" && $res->status->message == "Active role required to view this content.") {
-                        throw new ActiveRoleRequiredException("Active role required to view this content. This mostly happens when an non-active person login through EXPA. URL: " . $url . "access_token=" . $token . "");
-                    } else {
-                        throw new InvalidAPIResponseException($res->status->message);
-                    }
+                    $this->proceedStatus($res->status);
                 } else {
                     return $res;
                 }
@@ -148,31 +143,124 @@ class APIEndpoint extends API
     }
     
     public function update() {
-        
+        return $this->payloadRequest('PATCH');
     }
     
     public function create() {
-        
+        return $this->payloadRequest('POST');
     }
     
     public function delete() {
-        /*
-         * $url =$this->__url.$path;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL,$url);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $result = curl_exec($ch);
-    $result = json_decode($result);
-    curl_close($ch);
+        if(in_array('DELETE', $this->_cache['operations'])) {
+            if ($this->valid('DELETE')) {
+                $url = $this->baseUrl();
+                $params = $this->gatherParams('DELETE');
 
-    return $result;
-         */
+                // build url
+                if (count($params) > 0) {
+                    $params = http_build_query($params);
+
+                    // gis hack (replace numerical array keys with appending array key
+                    $params = preg_replace('/(%5B[0-9]*%5D)/', '%5B%5D', $params);
+
+                    $url .= '?' . $params . '&';
+                } else {
+                    $url .= '?';
+                }
+
+                $req = curl_init();
+                curl_setopt($req, CURLOPT_CUSTOMREQUEST, "DELETE");
+                curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
+
+                $attempts = 0;
+                $res = false;
+                while(!$res && $attempts < 3) {
+                    curl_setopt($req, CURLOPT_URL, $url . $this->_auth->getToken());
+                    $res = curl_exec($req);
+                    if(curl_getinfo($req, CURLINFO_HTTP_CODE) == 401 && $attempts < 2) {
+                        $this->_auth->getNewToken();
+                        $res = false;
+                    }
+                    $attempts++;
+                }
+
+                return $this->proceedResponse($req, $res);
+            } else {
+                throw new ParameterRequiredException('There are one or more required parameters missing for a DELETE request');
+            }
+        } else {
+            throw new OperationNotAvailableException("Operation DELETE is not available.");
+        }
     }
 
     public function reset() {
         $this->_params = array();
+    }
+
+    private function payloadRequest($operation) {
+        if(in_array($operation, $this->_cache['operations'])) {
+            if ($this->valid($operation)) {
+                $url = $this->baseUrl();
+                $params = json_encode($this->gatherParams($operation));
+
+                $req = curl_init();
+                curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
+
+                $res = false;
+                $attempts = 0;
+                while(!$res && $attempts < 3) {
+                    curl_setopt($req, CURLOPT_URL, $url . $this->_auth->getToken());
+                    curl_setopt($req, CURLOPT_CUSTOMREQUEST, $operation);
+                    curl_setopt($req, CURLOPT_POSTFIELDS, $params);
+                    curl_setopt($req, CURLOPT_HTTPHEADER, array(
+                            'Content-Type: application/json',
+                            'Content-Length: ' . strlen($params))
+                    );
+
+                    $res = curl_exec($req);
+                    if(curl_getinfo($req, CURLINFO_HTTP_CODE) == 401 && $attempts < 2) {
+                        $this->_auth->getNewToken();
+                        $res = false;
+                    }
+                    $attempts++;
+                }
+
+                return $this->proceedResponse($req, $res);
+            } else {
+                throw new ParameterRequiredException("There are one or more required parameters missing for a $operation request");
+            }
+        } else {
+            throw new OperationNotAvailableException("Operation $operation is not available.");
+        }
+    }
+
+    private function proceedResponse($req, $res) {
+        if($res !== false) {
+            if(strlen($res) < 2 && (curl_getinfo($req, CURLINFO_HTTP_CODE) == 200 || curl_getinfo($req, CURLINFO_HTTP_CODE) == 201 || curl_getinfo($req, CURLINFO_HTTP_CODE) == 204)) {
+                return true;
+            } else {
+                $json = json_decode($res);
+                if($json === null) {
+                    throw new NoResponseException("Invalid JSON");
+                } elseif(isset($json->status) && isset($json->status->code) && isset($json->status->message)) {
+                    $this->proceedStatus($json->status);
+                } else {
+                    return $json;
+                }
+            }
+        } else {
+            throw new NoResponseException(curl_error($req));
+        }
+    }
+
+    private function proceedStatus($status) {
+        if($status->code == "403" && $status->message == "Active role required to view this content.") {
+            throw new ActiveRoleRequiredException("Active role required to view this content. This mostly happens when an non-active person login through EXPA. URL: " . $url . "access_token=" . $token . "");
+        } elseif($status->code == "403" && $status->message == "You are not authorized to perform the requested action") {
+            throw new UnauthorizedException("You are not authorized to perform the requested action");
+        } else {
+            throw new InvalidAPIResponseException($status->message);
+        }
     }
 
     private function baseUrl() {
