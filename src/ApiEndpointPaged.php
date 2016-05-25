@@ -9,7 +9,7 @@
 namespace GISwrapper;
 
 
-class APIEndpointPaged extends APIEndpoint implements \Iterator
+class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
 {
     private $_data;
     private $_loaded;
@@ -17,6 +17,7 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator
     private $_currentItem;
     private $_pageItems;
     private $_facets;
+    private $_count;
 
     // $_currentPage is already declared in the class Endpoint for use in the get method
 
@@ -39,6 +40,7 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator
         $this->_currentPage = $res->paging->current_page;
         $this->_pages = $res->paging->total_pages;
         $this->_pageItems = count($res->data);
+        $this->_count = $res->paging->total_items;
         $this->_loaded = true;
     }
 
@@ -115,5 +117,14 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator
         $this->_currentItem = 0;
         $this->_currentPage = 1;
         $this->load();
+    }
+
+    public function count() {
+        $res = $this->get();
+        return $res->paging->total_items;
+    }
+
+    public function lastCount() {
+        return $this->_count;
     }
 }

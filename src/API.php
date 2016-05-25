@@ -28,7 +28,7 @@ class API
     {
         if(array_key_exists($name, $this->_cache['subs']) && !$this->_cache['subs'][$name]['dynamic']) {
             if(!isset($this->_subs[$name])) {
-                $this->_subs[$name] = SubFactory::factory($this->_cache['subs'][$name], $this->_auth);
+                $this->_subs[$name] = APISubFactory::factory($this->_cache['subs'][$name], $this->_auth);
             }
         } else {
             trigger_error("Property " . $name . " does not exist.", E_USER_WARNING);

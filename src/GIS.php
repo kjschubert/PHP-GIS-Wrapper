@@ -36,13 +36,41 @@ class GIS
             if(!is_array($this->_cache[$name])) {
                 $this->_cache[$name] = $this->proceedSubCache($this->_cache[$name], $name);
             }
-            $this->_subs[$name] = SubFactory::factory($this->_cache[$name], $this->_auth);
+            $this->_subs[$name] = APISubFactory::factory($this->_cache[$name], $this->_auth);
             return $this->_subs[$name];
+        }
+    }
+
+    public function __set($name, $value) {
+        if(array_key_exists($name, $this->_cache)) {
+            if($value instanceof API || is_subclass_of($value, API::class)) {
+                $this->_subs[$name] = $value;
+            } elseif(is_array($value)) {
+                if(!isset($this->_subs[$name])) {
+                    $this->_subs[$name] = APISubFactory::factory($this->_cache[$name], $this->_auth);
+                }
+                foreach($value as $key => $v) {
+                    $this->_subs[$name]->$key = $v;
+                }
+            }
+        } else {
+            trigger_error("Property " . $name . " does not exist", E_USER_ERROR);
         }
     }
 
     public function __isset($name)
     {
+        return isset($this->_subs[$name]);
+    }
+
+    public function __unset($name)
+    {
+        if(isset($this->_subs[$name])) {
+            unset($this->_subs[$name]);
+        }
+    }
+
+    public function exists($name) {
         return array_key_exists($name, $this->_cache);
     }
 
@@ -50,9 +78,9 @@ class GIS
         return $this->_cache;
     }
 
-    public function generateSimpleCache($apidoc) {
+    public static function generateSimpleCache($apidoc) {
         $cache = array();
-        $root = $this->loadJSON($apidoc);
+        $root = GIS::loadJSON($apidoc);
 
         if($root === false) {
             throw new NoResponseException("Could not load swagger root file");
@@ -71,20 +99,20 @@ class GIS
         return $cache;
     }
 
-    public function generateFullCache($apidoc) {
-        $cache = $this->generateSimpleCache($apidoc);
+    public static function generateFullCache($apidoc) {
+        $cache = GIS::generateSimpleCache($apidoc);
         foreach($cache as $name => $data) {
-            if(!is_array($data)) $cache[$name] = $this->proceedSubCache($data, $name);
+            if(!is_array($data)) $cache[$name] = GIS::proceedSubCache($data, $name);
         }
         return $cache;
     }
 
-    private function proceedSubCache($url, $baseName) {
+    private static function proceedSubCache($url, $baseName) {
         // prepare cache with API as root
         $cache = array('endpoint' => false, 'dynamicSub' => false);
 
         // load api manifest
-        $manifest = $this->loadJSON($url);
+        $manifest = GIS::loadJSON($url);
         if($manifest === false) {
             throw new NoResponseException("Could not load API swagger file");
         } elseif($manifest === null) {
@@ -122,7 +150,7 @@ class GIS
                     foreach($operation->parameters as $parameter) {
                         if($parameter->name == "page" || $parameter->name == "per_page") {
                             $endpoint['paged'] = true;
-                        } elseif($parameter->name != "access_token") {
+                        } elseif($parameter->name != "access_token" && $parameter->paramType != "path") {
                             $m = array(
                                 'type' => $parameter->dataType,
                                 'required' => $parameter->required
@@ -202,7 +230,7 @@ class GIS
         return $cache;
     }
 
-    private function loadJSON($url) {
+    public static function loadJSON($url) {
         $root = false;
         $attempts = 0;
         while(!$root && $root !== null && $attempts < 3) {

@@ -73,7 +73,7 @@ class OperationNotAvailableException extends \Exception {}
 
 
 /**
- * Class EndpointDuplicationException
+ * Class RequirementInvalidEndpointException
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
  * @version 0.2
@@ -107,3 +107,12 @@ class InvalidAPIResponseException extends \Exception {}
  * @package GISwrapper
  */
 class ActiveRoleRequiredException extends \Exception {}
+
+/**
+ * Class InvalidParameterTypeException
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @version 0.2
+ * @package GISwrapper
+ */
+class InvalidParameterTypeException extends \Exception {}

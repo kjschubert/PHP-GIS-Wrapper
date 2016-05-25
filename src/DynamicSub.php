@@ -72,7 +72,7 @@ class DynamicSub implements \ArrayAccess
         if(!isset($this->_dynamicInstances[$offset])) {
             $pathParams = $this->_pathParams;
             $pathParams[$this->_dynamicSub] = $offset;
-            $this->_dynamicInstances[$offset] = SubFactory::factory($this->_cache['subs'][$this->_dynamicSub], $this->_auth, $pathParams);
+            $this->_dynamicInstances[$offset] = APISubFactory::factory($this->_cache['subs'][$this->_dynamicSub], $this->_auth, $pathParams);
         }
         return $this->_dynamicInstances[$offset];
     }
