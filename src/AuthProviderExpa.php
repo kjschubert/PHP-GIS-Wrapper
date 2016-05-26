@@ -2,13 +2,13 @@
 namespace GISwrapper;
 
 /**
- * Class AuthProviderExpa
+ * Class AuthProviderEXPA
  *
  * @author Karl Johann Schubert <karljohann@familieschubi.de>
  * @version 0.2
  * @package GISwrapper
  */
-class AuthProviderExpa implements AuthProvider {
+class AuthProviderEXPA implements AuthProvider {
 
     /**
      * @var String
@@ -26,7 +26,7 @@ class AuthProviderExpa implements AuthProvider {
     private $_token;
 
     /**
-     * @var timestamp
+     * @var int timestamp
      */
     private $_expires_at;
 
@@ -41,16 +41,25 @@ class AuthProviderExpa implements AuthProvider {
     private $_session = "";
 
     /**
-     * @param String $user username of the user
-     * @param String $pass password of the user
+     * @param String $user username of the user or session file path
+     * @param String|null $pass password of the user | null for session
+     * @param bool $SSLVerifyPeer optional set curl option verify ssl peer (default true)
      * @throws \Exception if curl is missing
-     * @param bool $SSLVerifyPeer set curl option verify ssl peer (default true)
      */
-    function __construct($user, $pass, $SSLVerifyPeer = true) {
+    function __construct($user, $pass = null, $SSLVerifyPeer = true) {
         // check for curl
         if(function_exists('curl_init')) {
-            $this->_username = $user;
-            $this->_password = $pass;
+            if($pass === null) {    // got a session
+                $this->_username = "";
+                $this->_password = "";
+                $this->_session = $user;
+                if(!file_exists($this->_session)) {
+                    trigger_error("Session file does not exists.", E_USER_ERROR);
+                }
+            } else {    //got credentials
+                $this->_username = $user;
+                $this->_password = $pass;
+            }
             $this->_verifyPeer = $SSLVerifyPeer;
         } else {
             throw new \Exception("cURL missing");
@@ -59,7 +68,8 @@ class AuthProviderExpa implements AuthProvider {
 
     /**
      * @return String
-     * @covers \GIS\AuthProviderUser::generateNewToken
+     * @throws InvalidAuthResponseException
+     * @throws InvalidCredentialsException
      */
     public function getToken() {
         if($this->_token != null && $this->_expires_at > time()) {
@@ -73,7 +83,6 @@ class AuthProviderExpa implements AuthProvider {
      * @return String
      * @throws InvalidAuthResponseException
      * @throws InvalidCredentialsException
-     * @covers \GIS\AuthProviderUser::generateNewToken
      */
     public function getNewToken() {
         $this->generateNewToken();
@@ -82,7 +91,7 @@ class AuthProviderExpa implements AuthProvider {
     }
 
     /**
-     * @return timestamp
+     * @return int timestamp
      */
     public function getExpiresAt() {
         return $this->_expires_at;
@@ -96,7 +105,7 @@ class AuthProviderExpa implements AuthProvider {
     }
 
     /**
-     * @param $session session filename
+     * @param $session String session filename
      */
     public function setSession($session) {
         $this->_session = strval($session);
@@ -108,19 +117,23 @@ class AuthProviderExpa implements AuthProvider {
      * function that performs a login with GIS auth to get a new access token
      *
      * @return void
-     * @throws \GIS\InvalidCredentialsException if the username or password is invalid
-     * @throws \GIS\InvalidAuthResponseException if the response does not contain the access token
+     * @throws \GISwrapper\InvalidCredentialsException if the username or password is invalid
+     * @throws \GISwrapper\InvalidAuthResponseException if the response does not contain the access token
      */
     private function generateNewToken() {
+        // prepare data
         $data = "user%5Bemail%5D=" . urlencode($this->_username) . "&user%5Bpassword%5D=" . urlencode($this->_password);
 
-        if($this->_session == "" || !file_exists($this->_session)) {
+        // initiate curl request
+        if($this->_session == "" || !file_exists($this->_session)) {    // to perform login if there is no session
             $req = curl_init('https://auth.aiesec.org/users/sign_in');
             curl_setopt($req, CURLOPT_POST, true);
             curl_setopt($req, CURLOPT_POSTFIELDS, $data);
-        } else {
+        } else {    // to request EXPA token if there is a session
             $req = curl_init('https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fexperience.aiesec.org%2Fsign_in&response_type=code&client_id=349321fd15814e9fdd2c5abe062a6fb10a27a95dd226fce287adb6c51d3de3df');
         }
+
+        // set curl options
         curl_setopt($req, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($req, CURLOPT_HEADER, 1);
         curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
@@ -128,30 +141,38 @@ class AuthProviderExpa implements AuthProvider {
         curl_setopt($req, CURLOPT_COOKIEFILE, $this->_session);
         curl_setopt($req, CURLOPT_COOKIEJAR, $this->_session);
 
-        // get token and expiration date from cookies;
+        // retry failed request up to three times
         $attempts = 0;
-        $token = $expire = false;
-        while(!$token && $attempts < 3) {
+        $token = $expire = $res = false;
+        while(!$res && $attempts < 3) {
+            // run request
             $res = curl_exec($req);
-            preg_match_all('/^Set-Cookie:\s*([^\n]*)/mi', $res, $cookies);
-            foreach($cookies[1] as $c) {
-                $c = explode('; ', $c);
-                foreach($c as $cookie) {
-                    parse_str($cookie, $cookie);
-                    if(isset($cookie["expa_token"])) $token = trim($cookie["expa_token"]);
-                    if(isset($cookie["Expires"])) $expire = @strtotime($cookie["Expires"]);
+
+            // check if request was successful
+            if($res !== false) {
+                // get data from cookies
+                preg_match_all('/^Set-Cookie:\s*([^\n]*)/mi', $res, $cookies);
+                foreach($cookies[1] as $c) {
+                    $c = explode('; ', $c);
+                    foreach($c as $cookie) {
+                        parse_str($cookie, $cookie);
+                        if(isset($cookie["expa_token"])) $token = trim($cookie["expa_token"]);
+                        if(isset($cookie["Expires"])) $expire = @strtotime($cookie["Expires"]);
+                    }
+                }
+
+                // if we didn't got a token and the credentials are not invalid, assume that the session is invalid and change the request to login
+                if(!$token && strpos($res, "<h2>Invalid email or password.</h2>") === false) {
+                    curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/users/sign_in');
+                    curl_setopt($req, CURLOPT_POST, true);
+                    curl_setopt($req, CURLOPT_POSTFIELDS, $data);
+                    $res = false;
                 }
             }
             $attempts++;
-
-            // if we didn't got a token assume that the session is invalid and change the request to login
-            if(!$token) {
-                curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/users/sign_in');
-                curl_setopt($req, CURLOPT_POST, true);
-                curl_setopt($req, CURLOPT_POSTFIELDS, $data);
-            }
         }
 
+        // check response
         if($token != false) {
             $this->_token = $token;
             if($expire !== false && $expire > 0) {
