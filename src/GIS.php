@@ -145,7 +145,7 @@ class GIS
      * @throws NoResponseException
      * @throws RequirementsException
      */
-    public static function generateSimpleCache($apidoc) {
+    public static function generateSimpleCache($apidoc = "https://gis-api.aiesec.org/v2/docs.json") {
         $cache = array();
         $root = GIS::loadJSON($apidoc);
 
@@ -173,7 +173,7 @@ class GIS
      * @throws NoResponseException
      * @throws RequirementsException
      */
-    public static function generateFullCache($apidoc) {
+    public static function generateFullCache($apidoc = "https://gis-api.aiesec.org/v2/docs.json") {
         $cache = GIS::generateSimpleCache($apidoc);
         foreach($cache as $name => $data) {
             if(!is_array($data)) $cache[$name] = GIS::proceedSubCache($data, $name);
