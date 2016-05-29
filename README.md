@@ -6,6 +6,6 @@ The PHP GIS Wrapper is a PHP library to connect your PHP projects with AIESEC's 
 <b>Attention:</b> This branch contains version 0.2, which is still in development. Please use v0.1 from the master branch in production.
 
 ## Current State
-- Comments missed yet
-- PHPUnit tests not implemented yet
-- AuthProviders are commented and tested
+- first release candidate
+- unit tests successful
+- examples and documentation needed

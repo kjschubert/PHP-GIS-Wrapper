@@ -11,88 +11,195 @@ class ParamsTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->_cache = array(
-            'endpoint' => array(
+        $this->_cache = [
+            'endpoint' => [
                 'summary' => '',
                 'path' => '',
                 'endpoint' => true,
                 'dynamic' => false,
                 'dynamicSub' => false,
-                'subs' => array(),
-                'params' => array(
-                    'arrayStrict' => array(
-                        'subparams' => array(),
-                        'operations' => array(
-                            'GET' => array(
+                'subs' => [],
+                'params' => [
+                    'arrayStrict' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'GET' => [
                                 'type' => 'Array',
                                 'required' => true
-                            )
-                        )
-                    ),
-                    'arrayStrictUnrequired' => array(
-                        'subparams' => array(),
-                        'operations' => array(
-                            'GET' => array(
+                            ]
+                        ]
+                    ],
+                    'arrayStrictUnrequired' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'GET' => [
                                 'type' => 'Array',
                                 'required' => false
-                            )
-                        )
-                    ),
-                    'arrayStrictSub' => array(
-                        'subparams' => array(
-                            'param_1' => array(
-                                'subparams' => array(),
-                                'operations' => array(
-                                    'GET' => array(
+                            ]
+                        ]
+                    ],
+                    'arrayStrictSub' => [
+                        'subparams' => [
+                            'param_1' => [
+                                'subparams' => [],
+                                'operations' => [
+                                    'GET' => [
                                         'type' => 'String',
                                         'required' => true
-                                    )
-                                )
-                            ),
-                            'param_2' => array(
-                                'subparams' => array(),
-                                'operations' => array(
-                                    'GET' => array(
+                                    ]
+                                ]
+                            ],
+                            'param_2' => [
+                                'subparams' => [],
+                                'operations' => [
+                                    'GET' => [
                                         'type' => 'String',
                                         'required' => false
-                                    )
-                                )
-                            )
-                        ),
-                        'operations' => array(
-                            'GET' => array(
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'operations' => [
+                            'GET' => [
                                 'type' => 'Array',
                                 'required' => false
-                            )
-                        )
-                    ),
-                    'mixed' => array(
-                        'subparams' => array(),
-                        'operations' => array(
-                            'POST' => array(
+                            ]
+                        ]
+                    ],
+                    'mixed' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'POST' => [
                                 'type' => 'Integer',
                                 'required' => true
-                            ),
-                            'GET' => array(
+                            ],
+                            'GET' => [
                                 'type' => 'Array',
                                 'required' => true
-                            )
-                        )
-                    ),
-                    'string' => array(
-                        'subparams' => array(),
-                        'operations' => array(
-                            'GET' => array(
+                            ]
+                        ]
+                    ],
+                    'string' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'GET' => [
                                 'type' => 'String',
                                 'required' => false
-                            )
-                        )
-                    )
-                ),
+                            ]
+                        ]
+                    ]
+                ],
                 'paged' => false,
-                'operations' => array('GET')
-            )
-        );
+                'operations' => ['GET']
+            ],
+            'magic' => [
+                'summary' => '',
+                'path' => '',
+                'endpoint' => true,
+                'dynamic' => false,
+                'dynamicSub' => false,
+                'subs' => [],
+                'params' => [
+                    'sub' => [
+                        'subparams' => [
+                            'a' => [
+                                'subparams' => [],
+                                'operations' => [
+                                    'GET' => [
+                                        'type' => 'Integer',
+                                        'required' => false
+                                    ]
+                                ]
+                            ],
+                            'b' => [
+                                'subparams' => [],
+                                'operations' => [
+                                    'GET' => [
+                                        'type' => 'String',
+                                        'required' => false
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'operations' => [
+                            'GET' => [
+                                'type' => 'Hash',
+                                'required' => false
+                            ]
+                        ]
+                    ],
+                    'array' => [
+                        'subparams' => [
+                            'sub' => [
+                                'subparams' => [],
+                                'operations' => [
+                                    'GET' => [
+                                        'type' => 'String',
+                                        'required' => false
+                                    ]
+                                ]
+                            ]
+                        ],
+                        'operations' => [
+                            'GET' => [
+                                'type' => 'Array',
+                                'required' => false
+                            ]
+                        ]
+                    ]
+                ],
+                'paged' => false,
+                'operations' => ['GET']
+            ],
+            'validation' => [
+                'summary' => '',
+                'path' => '',
+                'endpoint' => true,
+                'dynamic' => false,
+                'dynamicSub' => false,
+                'subs' => [],
+                'params' => [
+                    'int' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'GET' => [
+                                'type' => 'Integer',
+                                'required' => true
+                            ]
+                        ]
+                    ],
+                    'string' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'GET' => [
+                                'type' => 'String',
+                                'required' => true
+                            ]
+                        ]
+                    ],
+                    'date' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'GET' => [
+                                'type' => 'Date',
+                                'required' => true
+                            ]
+                        ]
+                    ],
+                    'bool' => [
+                        'subparams' => [],
+                        'operations' => [
+                            'GET' => [
+                                'type' => 'Virtus::Attribute::Boolean',
+                                'required' => false
+                            ]
+                        ]
+                    ],
+                ],
+                'paged' => false,
+                'operations' => ['GET', 'POST']
+            ]
+        ];
         $this->_user = new \GISwrapper\AuthProviderEXPA(EXPA_USER, EXPA_PW);
         $this->_gis = new \GISwrapper\GIS($this->_user, $this->_cache);
     }
@@ -147,10 +254,17 @@ class ParamsTest extends PHPUnit_Framework_TestCase
             $this->_gis->endpoint->arrayStrictSub[$key]->param_2 = "Test Param 2";
         }
 
+        $this->assertCount(3, $this->_gis->endpoint->arrayStrictSub);
+        $this->assertTrue(isset($this->_gis->endpoint->arrayStrictSub[1]));
+
         foreach($this->_gis->endpoint->arrayStrictSub as $el) {
             $this->assertEquals("Test Param 1", $el->param_1);
             $this->assertEquals("Test Param 2", $el->param_2);
         }
+
+        unset($this->_gis->endpoint->arrayStrictSub[1]);
+
+        $this->assertFalse(isset($this->_gis->endpoint->arrayStrictSub[1]));
     }
 
     public function testArrayStrictSubError() {
@@ -158,33 +272,40 @@ class ParamsTest extends PHPUnit_Framework_TestCase
     }
 
     public function testArrayValidation() {
-        unset($this->_gis->endpoint);
         $this->assertFalse($this->_gis->endpoint->valid('GET'));
         $this->assertFalse($this->_gis->endpoint->arrayStrict->valid('GET'));
+
         $this->_gis->endpoint->arrayStrict = [0, 1, 2];
+
         $this->assertTrue($this->_gis->endpoint->arrayStrict->valid('GET'));
+
         $this->_gis->endpoint->arrayStrict = [];
+
         $this->assertFalse($this->_gis->endpoint->arrayStrict->valid('GET'));
         $this->assertTrue($this->_gis->endpoint->arrayStrictUnrequired->valid('GET'));
     }
 
     public function testMixed() {
-        unset($this->_gis->endpoint->mixed);
         $this->assertFalse($this->_gis->endpoint->mixed->valid('GET'));
         $this->assertFalse($this->_gis->endpoint->mixed->valid('POST'));
+
         $this->_gis->endpoint->mixed = 12;
+
         $this->assertFalse($this->_gis->endpoint->mixed->valid('GET'));
         $this->assertTrue($this->_gis->endpoint->mixed->valid('POST'));
+
         $this->_gis->endpoint->mixed = [1, 2, 3];
+
         $this->assertTrue($this->_gis->endpoint->mixed->valid('GET'));
         $this->assertTrue($this->_gis->endpoint->mixed->valid('POST'));
+
         $this->_gis->endpoint->mixed = 13;
+
         $this->assertTrue($this->_gis->endpoint->mixed->valid('GET'));
         $this->assertTrue($this->_gis->endpoint->mixed->valid('POST'));
     }
 
     public function testString() {
-        unset($this->_gis->endpoint->arrayStrictSub);
         $this->_gis->endpoint->arrayStrict = [1, 2, 3];
         $this->_gis->endpoint->mixed = [1, 2, 3];
         
@@ -197,5 +318,46 @@ class ParamsTest extends PHPUnit_Framework_TestCase
         $this->_gis->endpoint->string = "12";
 
         $this->assertTrue($this->_gis->endpoint->valid('GET'));
+    }
+
+    public function testTypeValidation() {
+        // int string date bool
+        $this->assertFalse($this->_gis->validation->valid('GET'));
+
+        $this->assertTrue($this->_gis->validation->valid('POST'));
+
+        $this->_gis->validation->int = 0.00;
+        $this->_gis->validation->string = 0.00;
+        $this->_gis->validation->date = 0.00;
+        $this->_gis->validation->bool = 0.00;
+
+        $this->assertFalse($this->_gis->validation->valid('GET'));
+
+        $this->_gis->validation->int = 10;
+        $this->_gis->validation->string = "10";
+        date_default_timezone_set('Europe/Berlin');
+        $this->_gis->validation->date = new DateTime();
+        $this->_gis->validation->bool = true;
+
+        $this->assertTrue($this->_gis->validation->valid('GET'));
+    }
+
+    public function testMagicFunctions() {
+        $this->assertTrue(($this->_gis->magic->array == "ArrayParameter"));
+
+        $this->assertTrue($this->_gis->magic->sub->exists('a'));
+        $this->assertFalse($this->_gis->magic->sub->exists('c'));
+
+        $this->assertFalse(isset($this->_gis->magic->sub->a));
+        $this->_gis->magic->sub->a = 10;
+        $this->assertTrue(isset($this->_gis->magic->sub->a));
+        $this->assertTrue(($this->_gis->magic->sub->a == "10"));
+
+        unset($this->_gis->magic->sub->a);
+        $this->assertFalse(isset($this->_gis->magic->sub->a));
+
+        $this->_gis->magic->sub = ['a' => 10, 'b' => "20"];
+        $this->assertEquals(10, $this->_gis->magic->sub->a);
+        $this->assertEquals("20", $this->_gis->magic->sub->b);
     }
 }

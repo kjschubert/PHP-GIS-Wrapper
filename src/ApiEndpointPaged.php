@@ -1,32 +1,70 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 23.05.16
- * Time: 21:38
- */
-
 namespace GISwrapper;
 
-
+/**
+ * Class APIEndpointPaged
+ * representing an part of the path returning data in pages
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
 {
+    /**
+     * @var object containing the returned elements
+     */
     private $_data;
+
+    /**
+     * @var bool indicating if there is loaded data
+     */
     private $_loaded;
+
+    /**
+     * @var int number of total pages
+     */
     private $_pages;
+
+    /**
+     * @var int
+     */
     private $_currentItem;
+
+    /**
+     * @var int number of elements on the current page
+     */
     private $_pageItems;
+
+    /**
+     * @var object containing the facets returned by some paged endpoints
+     */
     private $_facets;
+
+    /**
+     * @var int number of total elements in the last request
+     */
     private $_count;
 
     // $_currentPage is already declared in the class Endpoint for use in the get method
 
+    /**
+     * APIEndpointPaged constructor.
+     * @param array $cache parsed swagger file for this api
+     * @param AuthProvider $auth
+     * @param array $pathParams array with values for dynamic parts of the path
+     */
     function __construct($cache, $auth, $pathParams = array())
     {
         parent::__construct($cache, $auth, $pathParams);
         $this->_loaded = false;
     }
 
+    /**
+     * load the current page
+     * @throws OperationNotAvailableException
+     * @throws ParameterRequiredException
+     */
     private function load() {
         $res = $this->get();
 
@@ -45,6 +83,9 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
         $this->_loaded = true;
     }
 
+    /**
+     * @return object containing the facets of the endpoint
+     */
     public function getFacets() {
         if(!$this->_loaded) $this->load();
         return $this->_facets;
@@ -86,8 +127,8 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
     }
 
     /**
-     * Checks if current position is valid
-     * @param null $operation
+     * Checks if current position is valid if $operation is null and else if the parameters of this endpoint are valid for the http method
+     * @param null|string $operation null or the http method
      * @return bool
      */
     public function valid($operation = null)
@@ -110,6 +151,11 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
         $this->load();
     }
 
+    /**
+     * @return int number of elements with the current parameters
+     * @throws OperationNotAvailableException
+     * @throws ParameterRequiredException
+     */
     public function count() {
         $p = $this->_currentPage;
         $this->_currentPage = 1;
@@ -118,6 +164,9 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
         return $res->paging->total_items;
     }
 
+    /**
+     * @return int number of elements in the last request
+     */
     public function lastCount() {
         return $this->_count;
     }

@@ -1,16 +1,19 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 24.05.16
- * Time: 19:20
- */
-
 namespace GISwrapper;
 
-
+/**
+ * Class ParameterFactory
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class ParameterFactory
 {
+    /**
+     * @param array $cache parsed swagger file for this parameter
+     * @return ParameterArrayType|ParameterDefaultType
+     */
     public static function factory($cache) {
         $array = false;
         $strict = true;

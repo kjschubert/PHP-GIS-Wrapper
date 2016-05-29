@@ -1,14 +1,40 @@
 <?php
-
-
 namespace GISwrapper;
 
+/**
+ * Class GIS
+ * entry point to the GIS / Parsing of swagger files
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class GIS
 {
+    /**
+     * @var AuthProvider
+     */
     private $_auth;
+
+    /**
+     * @var array
+     */
     private $_subs;
+
+    /**
+     * @var array
+     */
     private $_cache;
 
+    /**
+     * GIS constructor.
+     * @param AuthProvider $auth
+     * @param string|array $apidoc url of apidocs or already parsed array
+     * @throws InvalidAuthProviderException
+     * @throws InvalidSwaggerFormatException
+     * @throws NoResponseException
+     * @throws RequirementsException
+     */
     function __construct($auth, $apidoc = "https://gis-api.aiesec.org/v2/docs.json")
     {
         // check that $auth implements the AuthProvider interface
@@ -18,6 +44,7 @@ class GIS
             throw new InvalidAuthProviderException("The given object does not implement the AuthProvider interface.");
         }
 
+        // proceed cache
         if(is_array($apidoc)) {
             $this->_cache = $apidoc;
         } else {
@@ -28,6 +55,13 @@ class GIS
         $this->_subs = array();
     }
 
+    /**
+     * @param mixed $name property name
+     * @return mixed value of the property
+     * @throws InvalidSwaggerFormatException
+     * @throws NoResponseException
+     * @throws RequirementsException
+     */
     public function __get($name)
     {
         if(array_key_exists($name, $this->_subs)) {
@@ -43,6 +77,13 @@ class GIS
         }
     }
 
+    /**
+     * @param mixed $name name of the property
+     * @param mixed $value value to set for the property
+     * @throws InvalidSwaggerFormatException
+     * @throws NoResponseException
+     * @throws RequirementsException
+     */
     public function __set($name, $value) {
         if(array_key_exists($name, $this->_cache)) {
             if($value instanceof API || is_subclass_of($value, API::class)) {
@@ -63,11 +104,18 @@ class GIS
         }
     }
 
+    /**
+     * @param $name proeperty name
+     * @return bool indicating if the property is instantiated
+     */
     public function __isset($name)
     {
         return isset($this->_subs[$name]);
     }
 
+    /**
+     * @param $name property name of the instance to be destroyed
+     */
     public function __unset($name)
     {
         if(isset($this->_subs[$name])) {
@@ -75,14 +123,28 @@ class GIS
         }
     }
 
+    /**
+     * @param $name property name
+     * @return bool indicating if the property exists (Does not mean it is instantiated. Use isset for this)
+     */
     public function exists($name) {
         return array_key_exists($name, $this->_cache);
     }
 
+    /**
+     * @return array containing the current state of the swagger file parsing
+     */
     public function getCache() {
         return $this->_cache;
     }
 
+    /**
+     * @param string $apidoc url of swagger file
+     * @return array containing only the parsed root swagger file
+     * @throws InvalidSwaggerFormatException
+     * @throws NoResponseException
+     * @throws RequirementsException
+     */
     public static function generateSimpleCache($apidoc) {
         $cache = array();
         $root = GIS::loadJSON($apidoc);
@@ -104,6 +166,13 @@ class GIS
         return $cache;
     }
 
+    /**
+     * @param string $apidoc url of swagger file
+     * @return array containing the parsing result of all swagger files
+     * @throws InvalidSwaggerFormatException
+     * @throws NoResponseException
+     * @throws RequirementsException
+     */
     public static function generateFullCache($apidoc) {
         $cache = GIS::generateSimpleCache($apidoc);
         foreach($cache as $name => $data) {
@@ -112,6 +181,14 @@ class GIS
         return $cache;
     }
 
+    /**
+     * @param string $url to the sub swagger file
+     * @param string $baseName name of this section
+     * @return array parsed sub swagger file
+     * @throws InvalidSwaggerFormatException
+     * @throws NoResponseException
+     * @throws RequirementsException
+     */
     private static function proceedSubCache($url, $baseName) {
         // prepare cache with API as root
         $cache = array('endpoint' => false, 'dynamicSub' => false);
@@ -238,7 +315,11 @@ class GIS
         return $cache;
     }
 
-    public static function loadJSON($url) {
+    /**
+     * @param string $url
+     * @return bool|object
+     */
+    private static function loadJSON($url) {
         $root = false;
         $attempts = 0;
         while(!$root && $root !== null && $attempts < 3) {

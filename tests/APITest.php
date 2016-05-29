@@ -9,6 +9,8 @@ class APITest extends PHPUnit_Framework_TestCase
     private $_cache;
     private $_user;
 
+    private $_files;
+
     public function setUp() {
         $this->_cache = array(
             'api_endpoint' => array(
@@ -110,10 +112,115 @@ class APITest extends PHPUnit_Framework_TestCase
                         'subs' => array()
                     )
                 )
-            )
+            ),
+            'api_dynamicSub' => [
+                'endpoint' => false,
+                'dynamic' => false,
+                'dynamicSub' => true,
+                'subs' => array(
+                    '{dynamic}' => array(
+                        'summary' => '',
+                        'path' => __DIR__ . '/{dynamic}.json',
+                        'endpoint' => true,
+                        'dynamic' => true,
+                        'dynamicSub' => false,
+                        'subs' => array(),
+                        'params' => array(),
+                        'paged' => false,
+                        'operations' => array('GET')
+                    ),
+                    'someSub' => array()
+                )
+            ],
+            'status' => array(
+                'endpoint' => false,
+                'dynamic' => false,
+                'dynamicSub' => false,
+                'subs' => array(
+                    'activeRole' => array(
+                        'summary' => '',
+                        'path' => __DIR__ . '/activeRole.json',
+                        'endpoint' => true,
+                        'dynamic' => false,
+                        'dynamicSub' => false,
+                        'subs' => array(),
+                        'params' => array(),
+                        'paged' => false,
+                        'operations' => array('GET')
+                    ),
+                    'unauthorized' => array(
+                        'summary' => '',
+                        'path' => __DIR__ . '/unauthorized.json',
+                        'endpoint' => true,
+                        'dynamic' => false,
+                        'dynamicSub' => false,
+                        'subs' => array(),
+                        'params' => array(),
+                        'paged' => false,
+                        'operations' => array('GET')
+                    ),
+                    'invalid' => array(
+                        'summary' => '',
+                        'path' => __DIR__ . '/invalid.json',
+                        'endpoint' => true,
+                        'dynamic' => false,
+                        'dynamicSub' => false,
+                        'subs' => array(),
+                        'params' => array(),
+                        'paged' => false,
+                        'operations' => array('GET')
+                    )
+                )
+            ),
+            'noGet' => array(
+                'summary' => '',
+                'path' => '',
+                'endpoint' => true,
+                'dynamic' => false,
+                'dynamicSub' => false,
+                'subs' => array(),
+                'params' => array(),
+                'paged' => false,
+                'operations' => array('POST')
+            ),
         );
         $this->_user = new \GISwrapper\AuthProviderEXPA(EXPA_USER, EXPA_PW);
         $this->_gis = new \GISwrapper\GIS($this->_user, $this->_cache);
+
+        $this->_files = array();
+
+        // create testfile for dynamic Sub
+        $file1 = __DIR__ . '/12.json?access_token=' . $this->_user->getToken();
+        file_put_contents($file1, '{"id": "12", "name": "Test"}');
+        $this->_files[] = $file1;
+
+        // create testfiles for pagedEndpoint
+        $file2 = __DIR__ . '/paged.json?access_token=' . $this->_user->getToken();
+        file_put_contents($file2, file_get_contents(__DIR__ . '/assets/page1.json'));
+        $this->_files[] = $file2;
+
+        $file3 = __DIR__ . '/paged.json?page=1&access_token=' . $this->_user->getToken();
+        file_put_contents($file3, file_get_contents(__DIR__ . '/assets/page1.json'));
+        $this->_files[] = $file3;
+
+        $file4 = __DIR__ . '/paged.json?page=2&access_token=' . $this->_user->getToken();
+        file_put_contents($file4, file_get_contents(__DIR__ . '/assets/page2.json'));
+        $this->_files[] = $file4;
+
+        // create testfile for ActiveRoleException
+        $file5 = __DIR__ . '/activeRole.json?access_token=' . $this->_user->getToken();
+        file_put_contents($file5, '{"status": {"code": "403", "message": "Active role required to view this content."}}');
+        $this->_files[] = $file5;
+
+        // create testfile for InvalidAPIResponseExceptionException
+        $file6 = __DIR__ . '/unauthorized.json?access_token=' . $this->_user->getToken();
+        file_put_contents($file6, '{"status": {"code": "403", "message": "You are not authorized to perform the requested action"}}');
+        $this->_files[] = $file6;
+
+        // create testfile for ActiveRoleException
+        $file7 = __DIR__ . '/invalid.json?access_token=' . $this->_user->getToken();
+        file_put_contents($file7, '{"status": {"code": "500", "message": "Server Error"}}');
+        $this->_files[] = $file7;
     }
 
     public function testGIS() {
@@ -153,6 +260,14 @@ class APITest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf('\GISwrapper\APIEndpointDynamicSub', $this->_gis->api_endpoint_dynamicSub);
         $this->assertInstanceOf('\GISwrapper\APIEndpoint', $this->_gis->api_endpoint_dynamicSub[0]);
         $this->assertInstanceOf('\GISwrapper\APIEndpoint', $this->_gis->api_endpoint);
+    }
+
+    public function testUnset() {
+        $this->assertFalse(isset($this->_gis->api));
+        $this->assertNotNull($this->_gis->api);
+        $this->assertTrue(isset($this->_gis->api));
+        unset($this->_gis->api);
+        $this->assertFalse(isset($this->_gis->api));
     }
 
     public function testAPI() {
@@ -197,10 +312,6 @@ class APITest extends PHPUnit_Framework_TestCase
     }
 
     public function testEndpointDynamicSub() {
-        // create testfile for dynamic Sub
-        $filename = __DIR__ . '/12.json?access_token=' . $this->_user->getToken();
-        file_put_contents($filename, '{"id": "12", "name": "Test"}');
-
         // test offsetExists
         $this->assertFalse(isset($this->_gis->api_endpoint_dynamicSub[12]));
         $this->assertFalse(isset($this->_gis->api_endpoint_dynamicSub[13]));
@@ -238,20 +349,9 @@ class APITest extends PHPUnit_Framework_TestCase
         // test offsetUnset
         unset($this->_gis->api_endpoint_dynamicSub[12]);
         $this->assertFalse(isset($this->api_endpoint_dynamicSub[12]));
-
-        // delete test file
-        unlink($filename);
     }
 
     public function testEndpointPaged() {
-        // create assets
-        $page = __DIR__ . '/paged.json?access_token=' . $this->_user->getToken();
-        file_put_contents($page, file_get_contents(__DIR__ . '/assets/page1.json'));
-        $page1 = __DIR__ . '/paged.json?page=1&access_token=' . $this->_user->getToken();
-        file_put_contents($page1, file_get_contents(__DIR__ . '/assets/page1.json'));
-        $page2 = __DIR__ . '/paged.json?page=2&access_token=' . $this->_user->getToken();
-        file_put_contents($page2, file_get_contents(__DIR__ . '/assets/page2.json'));
-
         // check Iterator Interface
         $i = 1;
         foreach($this->_gis->api_paged_endpoint as $id => $el) {
@@ -277,18 +377,9 @@ class APITest extends PHPUnit_Framework_TestCase
         // test count
         $this->assertEquals(8, $this->_gis->api_paged_endpoint->lastCount());
         $this->assertCount(8, $this->_gis->api_paged_endpoint);
-
-        // delete temporary files
-        unlink($page);
-        unlink($page1);
-        unlink($page2);
     }
 
     public function testEndpointPagedDynamicSub() {
-        // create testfile for dynamic Sub
-        $filename = __DIR__ . '/12.json?access_token=' . $this->_user->getToken();
-        file_put_contents($filename, '{"id": "12", "name": "Test"}');
-
         // test offsetExists
         $this->assertFalse(isset($this->_gis->api_paged_endpoint_dynamicSub[12]));
         $this->assertFalse(isset($this->_gis->api_paged_endpoint_dynamicSub[13]));
@@ -326,8 +417,112 @@ class APITest extends PHPUnit_Framework_TestCase
         // test offsetUnset
         unset($this->_gis->api_paged_endpoint_dynamicSub[12]);
         $this->assertFalse(isset($this->api_paged_endpoint_dynamicSub[12]));
+    }
 
-        // delete test file
-        unlink($filename);
+    public function testAPIDynamicSub() {
+        // test offsetExists
+        $this->assertFalse(isset($this->_gis->api_dynamicSub[12]));
+        $this->assertFalse(isset($this->_gis->api_dynamicSub[13]));
+        $this->assertNotNull($this->_gis->api_dynamicSub[12]);
+        $this->assertNotNull($this->_gis->api_dynamicSub[13]);
+        $this->assertTrue(isset($this->_gis->api_dynamicSub[12]));
+        $this->assertTrue(isset($this->_gis->api_dynamicSub[13]));
+
+        // test exists
+        $this->assertTrue($this->_gis->api_dynamicSub->exists('someSub'));
+        $this->assertFalse($this->_gis->api_dynamicSub->exists('{dynamic}'));
+        $this->assertFalse($this->_gis->api_dynamicSub->exists('nonExistentSub'));
+        $this->assertTrue($this->_gis->api_dynamicSub->exists('12'));
+        $this->assertFalse($this->_gis->api_dynamicSub->exists('13'));
+
+        // test existsSub
+        $this->assertTrue($this->_gis->api_dynamicSub->existsSub('someSub'));
+        $this->assertFalse($this->_gis->api_dynamicSub->existsSub('{dynamic}'));
+        $this->assertFalse($this->_gis->api_dynamicSub->existsSub('nonExistentSub'));
+        $this->assertFalse($this->_gis->api_dynamicSub->existsSub('12'));
+
+        // test existsDynamicSub
+        $this->assertTrue($this->_gis->api_dynamicSub->existsDynamicSub('12'));
+        $this->assertFalse($this->_gis->api_dynamicSub->existsDynamicSub('13'));
+        $this->assertFalse($this->_gis->api_dynamicSub->existsDynamicSub('someSub'));
+
+        // test offsetGet
+        $el = $this->_gis->api_dynamicSub[12];
+        $this->assertNotNull($el);
+
+        // test offsetSet
+        $this->_gis->api_dynamicSub[12] = $el;
+        $this->assertEquals($el, $this->_gis->api_dynamicSub[12]);
+
+        // test offsetUnset
+        unset($this->_gis->api_dynamicSub[12]);
+        $this->assertFalse(isset($this->api_dynamicSub[12]));
+    }
+
+    /**
+     * @expectedException \GISwrapper\ParameterRequiredException
+     */
+    public function testParameterRequiredException() {
+        $this->_gis->api_endpoint->get();
+    }
+
+    /**
+     * @expectedException \GISwrapper\OperationNotAvailableException
+     * @expectedExceptionMessage Operation GET is not available
+     */
+    public function testOperationNotAvailableExceptionGET() {
+        $this->_gis->noGet->get();
+    }
+
+    /**
+     * @expectedException \GISwrapper\OperationNotAvailableException
+     * @expectedExceptionMessage Operation PATCH is not available
+     */
+    public function testOperationNotAvailableExceptionPATCH() {
+        $this->_gis->api_endpoint->update();
+    }
+
+    /**
+     * @expectedException \GISwrapper\OperationNotAvailableException
+     * @expectedExceptionMessage Operation POST is not available
+     */
+    public function testOperationNotAvailableExceptionPOST() {
+        $this->_gis->api_endpoint->create();
+    }
+
+    /**
+     * @expectedException \GISwrapper\OperationNotAvailableException
+     * @expectedExceptionMessage Operation DELETE is not available
+     */
+    public function testOperationNotAvailableExceptionDELETE() {
+        $this->_gis->api_endpoint->delete();
+    }
+
+    /**
+     * @expectedException \GISwrapper\ActiveRoleRequiredException
+     */
+    public function testStatusActiveRoleRequired() {
+        $this->_gis->status->activeRole->get();
+    }
+
+    /**
+     * @expectedException \GISwrapper\UnauthorizedException
+     */
+    public function testStatusUnauthorized() {
+        $this->_gis->status->unauthorized->get();
+    }
+
+    /**
+     * @expectedException \GISwrapper\InvalidAPIResponseException
+     * @expectedExceptionMessage Server Error
+     */
+    public function testInvalidResponse() {
+        $this->_gis->status->invalid->get();
+    }
+
+    public function tearDown() {
+        foreach($this->_files as $file) {
+            unlink($file);
+        }
     }
 }

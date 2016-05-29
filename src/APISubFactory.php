@@ -1,16 +1,21 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 23.05.16
- * Time: 22:56
- */
-
 namespace GISwrapper;
 
-
+/**
+ * Class APISubFactory
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class APISubFactory
 {
+    /**
+     * @param array $cache parsed swagger file for this api
+     * @param AuthProvider $auth
+     * @param array $pathParams array with values for dynamic parts of the path
+     * @return API|APIDynamicSub|APIEndpoint|APIEndpointDynamicSub|APIEndpointPaged|APIEndpointPagedDynamicSub
+     */
     public static function factory($cache, $auth, $pathParams = array()) {
         if($cache['endpoint']) {
             if($cache['paged']) {

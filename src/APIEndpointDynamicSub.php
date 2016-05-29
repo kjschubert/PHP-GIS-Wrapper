@@ -1,24 +1,39 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 24.05.16
- * Time: 17:38
- */
-
 namespace GISwrapper;
 
-
+/**
+ * Class APIEndpointDynamicSub
+ * representing a data returning part of the api path, containing a dynamic sub part
+ *
+ * @author Karl Johann Schubert <karljohann@famlieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class APIEndpointDynamicSub extends APIEndpoint implements \ArrayAccess
 {
+    /**
+     * @var DynamicSub
+     */
     private $_dynamicSub;
 
+    /**
+     * APIEndpointDynamicSub constructor.
+     * @param array $cache parsed swagger file for this api
+     * @param AuthProvider $auth
+     * @param array $pathParams array with values for dynamic parts of the path
+     */
     public function __construct($cache, $auth, $pathParams = array())
     {
         parent::__construct($cache, $auth, $pathParams);
+
+        // create instance of DynamicSub class
         $this->_dynamicSub = new DynamicSub($cache, $auth, $pathParams);
     }
 
+    /**
+     * @param mixed $name property name
+     * @return bool indicating if this property exists (Does not mean there is a instance. Use isset to check if the instance exists)
+     */
     public function exists($name) {
         if(!$this->existsSub($name)) {
             return $this->existsDynamicSub($name);
@@ -27,29 +42,54 @@ class APIEndpointDynamicSub extends APIEndpoint implements \ArrayAccess
         }
     }
 
+    /**
+     * @param mixed $name sub name
+     * @return bool indicating if a subpath with this name exists (Does not mean there is a instance. Use isset to check if the instance exists)
+     */
     public function existsSub($name) {
         return parent::exists($name);
     }
 
+    /**
+     * @param mixed $name
+     * @return bool indicating if the offset exists for the dynamic subpath (Does not mean there is a instance. Use isset to check if the instance exists)
+     * @throws NoResponseException
+     */
     public function existsDynamicSub($name) {
         return $this->_dynamicSub->exists($name);
     }
 
+    /**
+     * @param mixed $offset
+     * @return bool indicating if there is a instance for this offset
+     */
     public function offsetExists($offset)
     {
         return $this->_dynamicSub->offsetExists($offset);
     }
 
+    /**
+     * @param mixed $offset
+     * @return mixed instance for this offset
+     */
     public function offsetGet($offset)
     {
         return $this->_dynamicSub->offsetGet($offset);
     }
 
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     */
     public function offsetSet($offset, $value)
     {
         $this->_dynamicSub->offsetSet($offset, $value);
     }
 
+    /**
+     * @param mixed $offset
+     * deletes the instance at $offset
+     */
     public function offsetUnset($offset)
     {
         $this->_dynamicSub->offsetUnset($offset);

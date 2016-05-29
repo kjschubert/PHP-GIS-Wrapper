@@ -8,8 +8,6 @@ class OnlineTest extends PHPUnit_Framework_TestCase
 
     private $_user;
     private $_gis;
-    private $_opportunityId;
-    private $_userId;
 
     public function setUp() {
         $this->_user = new \GISwrapper\AuthProviderEXPA(EXPA_USER, EXPA_PW);
@@ -67,5 +65,45 @@ class OnlineTest extends PHPUnit_Framework_TestCase
     public function testDelete($oid) {
         $this->_gis->opportunities[$oid]->delete();
         $this->assertFalse($this->_gis->opportunities->existsDynamicSub($oid));
+    }
+
+    public function testGetRequestWithParams() {
+        $this->_gis->opportunities = [
+            'filters' => [
+                'languages' => [
+                    [
+                        'id' => 24,
+                        'option' => 'required'
+                    ],
+                ],
+                'programmes' => [1, 2]
+            ]
+        ];
+
+        $this->assertEquals(24, $this->_gis->opportunities->filters->languages[0]->id);
+        $this->assertEquals('required', $this->_gis->opportunities->filters->languages[0]->option);
+        $this->assertEquals(1, $this->_gis->opportunities->filters->programmes[0]);
+        $this->assertEquals(2, $this->_gis->opportunities->filters->programmes[1]);
+
+        $i = 0;
+        foreach($this->_gis->opportunities as $o) {
+            // limit to 10 opportunities
+            if($i >= 10) break;
+            $i++;
+
+            // check that programme filter works
+            $this->assertTrue(in_array($o->programmes->id, [1, 2]));
+
+            // get full opportunity to check for language
+            $o = $this->_gis->opportunities[$o->id]->get();
+            $languages = array();
+            foreach($o->languages as $l) {
+                $languages[$l->id] = $l->option;
+            }
+            $this->assertArrayHasKey(24, $languages);
+
+            // unset opportunity
+            unset($this->_gis->opportunities[$o->id]);
+        }
     }
 }

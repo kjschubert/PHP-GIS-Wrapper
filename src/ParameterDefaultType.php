@@ -1,21 +1,40 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 23.05.16
- * Time: 15:06
- */
-
 namespace GISwrapper;
 
-
+/**
+ * Class ParameterDefaultType
+ * representing a parameter or element of a array parameter
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class ParameterDefaultType
 {
+    /**
+     * @var array
+     */
     protected $_subparams;
+
+    /**
+     * @var array
+     */
     protected $_cache;
+
+    /**
+     * @var mixed
+     */
     protected $_value;
+
+    /**
+     * @var bool
+     */
     protected $_strict;
 
+    /**
+     * ParameterDefaultType constructor.
+     * @param array $cache parsed swagger file for this parameter
+     */
     function __construct($cache)
     {
         $this->_cache = $cache;
@@ -24,8 +43,8 @@ class ParameterDefaultType
     }
 
     /**
-     * @param $name
-     * @return null|mixed
+     * @param mixed $name name of the subparameter
+     * @return null|mixed property value or instance
      */
     public function __get($name) {
         if(array_key_exists($name, $this->_cache['subparams'])) {
@@ -44,7 +63,7 @@ class ParameterDefaultType
     }
 
     /**
-     * @param $name Name of the child parameter
+     * @param $name Name of the subparameter
      * @param $value Sets the child $name to $value if it is an object or sets the value of $name to $value if $value is not a object
      */
     public function __set($name, $value) {
@@ -55,7 +74,7 @@ class ParameterDefaultType
                 if(!isset($this->_subparams[$name])) {
                     $this->_subparams[$name] = ParameterFactory::factory($this->_cache['subparams'][$name]);
                 }
-                if(is_scalar($value)) {
+                if(is_scalar($value) || $value instanceof \DateTime) {
                     $this->_subparams[$name]->value($value);
                 } elseif(is_array($value)) {
                     // recreate subparam to reset other keys and keep scalar value if existent
@@ -82,6 +101,10 @@ class ParameterDefaultType
         }
     }
 
+    /**
+     * convert this parameter to a string
+     * @return string
+     */
     public function __toString()
     {
         if($this->hasChilds()) {
@@ -91,22 +114,33 @@ class ParameterDefaultType
         }
     }
 
+    /**
+     * @param mixed $name property name of the instance to be destroyed
+     */
     public function __unset($name) {
         if(isset($this->_subparams[$name])) {
             unset($this->_subparams[$name]);
         }
     }
 
+    /**
+     * @param $name property name
+     * @return bool indicating if the property is instantiated
+     */
     public function __isset($name) {
         return isset($this->_subparams[$name]);
     }
 
+    /**
+     * @param $name property name
+     * @return bool indicating if the property exists (Does not mean it is instantiated. Use isset for this)
+     */
     public function exists($name) {
         return isset($this->_cache['subparams'][$name]);
     }
 
     /**
-     * @param mixed|null $value Sets the value of this parameter if $value is not null
+     * @param mixed|null $value sets the value of this parameter if $value is not null
      * @return mixed|null
      */
     public function value($value = null) {
@@ -143,7 +177,7 @@ class ParameterDefaultType
             }
         } else {
             if ($value !== null) {
-                if(is_scalar($value)) {
+                if(is_scalar($value) || $value instanceof \DateTime) {
                     if($this->_strict) {
                         trigger_error("Can not set a scalar value to a Parameter which is in all operations an Array.", E_USER_ERROR);
                     } else {
@@ -172,26 +206,14 @@ class ParameterDefaultType
     }
 
     /**
-     * @return bool
+     * @return bool indicating if this parameter has subparameters
      */
     public function hasChilds() {
         return (count($this->_cache['subparams']) > 0);
     }
 
     /**
-     * @param $operation
-     * @return bool
-     */
-    public function required($operation) {
-        if(in_array($operation, $this->_cache['operations'])) {
-            return $this->_cache['operations'][$operation]['required'];
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @param $operation
+     * @param $operation http method to check for
      * @return bool
      * @throws InvalidParameterTypeException
      */
@@ -216,7 +238,7 @@ class ParameterDefaultType
 
                 case 'Date':
                 case 'DateTime':
-                    if($this->_value instanceof DateTime) {
+                    if($this->_value instanceof \DateTime) {
                         return true;
                     } else {
                         return false;
@@ -264,10 +286,10 @@ class ParameterDefaultType
             return true;
         }
     }
-    
+
     /**
-     * @param $operation
-     * @return array|null|string
+     * @param $operation http method
+     * @return array|null|mixed value of this parameter for the specified http method
      */
     public function getRequestValue($operation) {
         if($this->hasChilds()) {

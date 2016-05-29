@@ -1,16 +1,23 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 24.05.16
- * Time: 17:31
- */
-
 namespace GISwrapper;
 
-
+/**
+ * Class GET
+ * helper class for GET requests
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class GET
 {
+    /**
+     * @param string $url
+     * @param AuthProvider $auth
+     * @return object representing the requested resource
+     * @throws InvalidAPIResponseException
+     * @throws NoResponseException
+     */
     public static function request($url, $auth) {
         $attempts = 0;
         $res = false;

@@ -1,22 +1,48 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 24.05.16
- * Time: 17:26
- */
-
 namespace GISwrapper;
 
-
+/**
+ * Class DynamicSub
+ * Helper class which contains the logic for dynamic sub parts
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @package GISwrapper
+ * @version 0.2
+ */
 class DynamicSub implements \ArrayAccess
 {
+    /**
+     * @var AuthProvider
+     */
     private $_auth;
+
+    /**
+     * @var array
+     */
     private $_cache;
+
+    /**
+     * @var array
+     */
     private $_pathParams;
+
+    /**
+     * @var string property name of the dynamic sub part
+     */
     private $_dynamicSub;
+
+    /**
+     * @var array instances of the dynamic sub part
+     */
     private $_dynamicInstances;
 
+    /**
+     * DynamicSub constructor.
+     * @param array $cache parsed swagger file for this api
+     * @param AuthProvider $auth
+     * @param array $pathParams array with values for dynamic parts of the path
+     * @throws RequirementInvalidEndpointException
+     */
     public function __construct($cache, $auth, $pathParams = array())
     {
         $this->_auth = $auth;
@@ -40,6 +66,12 @@ class DynamicSub implements \ArrayAccess
         }
     }
 
+    /**
+     * @param mixed $offset
+     * @return bool indicating if the resource at this offset exists
+     * @throws InvalidAPIResponseException
+     * @throws NoResponseException
+     */
     public function exists($offset) {
         $url = $this->_cache['subs'][$this->_dynamicSub]['path'];
 
@@ -74,11 +106,19 @@ class DynamicSub implements \ArrayAccess
         }
     }
 
+    /**
+     * @param mixed $offset
+     * @return bool indicating if this offset is instantiated
+     */
     public function offsetExists($offset)
     {
         return isset($this->_dynamicInstances[$offset]);
     }
 
+    /**
+     * @param mixed $offset
+     * @return mixed returns the instance at this offset
+     */
     public function offsetGet($offset)
     {
         if(!isset($this->_dynamicInstances[$offset])) {
@@ -89,6 +129,10 @@ class DynamicSub implements \ArrayAccess
         return $this->_dynamicInstances[$offset];
     }
 
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     */
     public function offsetSet($offset, $value)
     {
         if(is_object($value) && ($value instanceof API || is_subclass_of($value, API::class))) {
@@ -98,6 +142,9 @@ class DynamicSub implements \ArrayAccess
         }
     }
 
+    /**
+     * @param mixed $offset offset of the instance to be destroyed
+     */
     public function offsetUnset($offset)
     {
         unset($this->_dynamicInstances[$offset]);

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kjs
- * Date: 30.05.15
- * Time: 16:06
- */
-
 namespace GISwrapper;
 
 /**
