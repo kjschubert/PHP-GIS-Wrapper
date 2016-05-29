@@ -38,6 +38,8 @@ class GIS
             }
             $this->_subs[$name] = APISubFactory::factory($this->_cache[$name], $this->_auth);
             return $this->_subs[$name];
+        } else {
+            trigger_error("Property $name does not exists.", E_USER_ERROR);
         }
     }
 
@@ -47,6 +49,9 @@ class GIS
                 $this->_subs[$name] = $value;
             } elseif(is_array($value)) {
                 if(!isset($this->_subs[$name])) {
+                    if(!is_array($this->_cache[$name])) {
+                        $this->_cache[$name] = $this->proceedSubCache($this->_cache[$name], $name);
+                    }
                     $this->_subs[$name] = APISubFactory::factory($this->_cache[$name], $this->_auth);
                 }
                 foreach($value as $key => $v) {
@@ -156,11 +161,12 @@ class GIS
                                 'required' => $parameter->required
                             );
                             $names = explode('[', $parameter->name);
-                            if(count($names) == 1) {    // level 1 parameter
-                                if(!isset($endpoint['params'][$names[0]])) {
-                                    $endpoint['params'][$names[0]] = array('subparams' => array(), 'operations' => array());
-                                }
 
+                            if(!isset($endpoint['params'][$names[0]])) {
+                                $endpoint['params'][$names[0]] = array('subparams' => array(), 'operations' => array());
+                            }
+
+                            if(count($names) == 1) {    // level 1 parameter
                                 // place data about this method in the endpoint
                                 $endpoint['params'][$names[0]]['operations'][$operation->httpMethod] = $m;
                             } else {    // level n parameter
@@ -192,6 +198,8 @@ class GIS
                 // place endpoint
                 if(str_replace('.{format}', '', $api->path) == '/' . $manifest->apiVersion . '/' . $baseName) { // root endpoint
                     if(is_array($cache['subs'])) $endpoint['subs'] = $cache['subs'];
+                    if($cache['dynamicSub']) $endpoint['dynamicSub'] = true;
+
                     $cache = $endpoint;
                 } elseif(count($path) == 1) {   // level 1 sub endpoint
                     // check for already added subs as well as the dynamicSub property and keep them
@@ -204,20 +212,20 @@ class GIS
                     // check if endpoint is dynamic and set dynamicSub of root endpoint/api accordingly
                     if($endpoint['dynamic']) $cache['dynamicSub'] = true;
                 } else {    // level n sub endpoint
-                    $oldref = null;
                     $ref = &$cache;
                     foreach($path as $p) {
                         // if intermediate endpoint or api does not exist yet, create it as API
-                        if(!isset($ref['subs'][$p])) $ref['subs'][$p] = array('endpoint' => false, 'subs' => array());
+                        if(!isset($ref['subs'][$p])) {
+                            $ref['subs'][$p] = array('endpoint' => false, 'dynamic' => false, 'dynamicSub' => false, 'subs' => array());
+                            if(substr($p, 0, 1) == '{') $ref['subs'][$p]['dynamic'] = true;
+                        }
 
-                        // if endpoint is dynamic, also save oldref to set dynamicSub
-                        if($endpoint['dynamic']) $oldref = $ref;
+                        // check if we are at a dynamic endpoint and if yes set dynamicSub, before we move the reference forward
+                        if(substr($p, 0, 1) == '{') $ref['dynamicSub'] = true;
 
-                        // move reference to next intermediate endpoint
+                        // move reference to next path part
                         $ref = &$ref['subs'][$p];
                     }
-                    if($endpoint['dynamic'] && $oldref != null) $oldref['dynamicSub'] = true;
-
                     // check for already added subs as well as the dynamicSub property and keep them
                     if(isset($ref['subs'])) $endpoint['subs'] = $ref['subs'];
                     if(isset($ref['dynamicSub']) && $ref['dynamicSub']) $endpoint['dynamicSub'] = true;

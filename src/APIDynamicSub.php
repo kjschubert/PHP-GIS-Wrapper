@@ -19,6 +19,22 @@ class APIDynamicSub extends API implements \ArrayAccess
         $this->_dynamicSub = new DynamicSub($cache, $auth, $pathParams);
     }
 
+    public function exists($name) {
+        if(!$this->existsSub($name)) {
+            return $this->existsDynamicSub($name);
+        } else {
+            return true;
+        }
+    }
+
+    public function existsSub($name) {
+        return isset($this->_cache['subs'][$name]);
+    }
+
+    public function existsDynamicSub($name) {
+        return $this->_dynamicSub->exists($name);
+    }
+
     public function offsetExists($offset)
     {
         return $this->_dynamicSub->offsetExists($offset);
@@ -37,10 +53,5 @@ class APIDynamicSub extends API implements \ArrayAccess
     public function offsetUnset($offset)
     {
         $this->_dynamicSub->offsetUnset($offset);
-    }
-
-    public function reset() {
-        $this->_dynamicSub->reset();
-        parent::reset();
     }
 }

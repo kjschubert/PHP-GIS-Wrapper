@@ -20,6 +20,22 @@ class APIEndpointPagedDynamicSub extends APIEndpointPaged implements \ArrayAcces
         $this->_dynamicSub = new DynamicSub($cache, $auth, $pathParams);
     }
 
+    public function exists($name) {
+        if(!$this->existsSub($name)) {
+            return $this->existsDynamicSub($name);
+        } else {
+            return true;
+        }
+    }
+
+    public function existsSub($name) {
+        return parent::exists($name);
+    }
+
+    public function existsDynamicSub($name) {
+        return $this->_dynamicSub->exists($name);
+    }
+
     public function offsetExists($offset)
     {
         return $this->_dynamicSub->offsetExists($offset);
@@ -38,10 +54,5 @@ class APIEndpointPagedDynamicSub extends APIEndpointPaged implements \ArrayAcces
     public function offsetUnset($offset)
     {
         $this->_dynamicSub->offsetUnset($offset);
-    }
-
-    public function reset() {
-        $this->_dynamicSub->reset();
-        parent::reset();
     }
 }

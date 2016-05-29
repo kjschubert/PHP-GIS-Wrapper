@@ -24,6 +24,7 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
     function __construct($cache, $auth, $pathParams = array())
     {
         parent::__construct($cache, $auth, $pathParams);
+        $this->_loaded = false;
     }
 
     private function load() {
@@ -44,18 +45,8 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
         $this->_loaded = true;
     }
 
-    public function reset() {
-        parent::reset();
-        $this->_data = null;
-        $this->_pageItems = null;
-        $this->_pages = null;
-        $this->_currentItem = 0;
-        $this->_currentPage = 1;
-        $this->_loaded = false;
-    }
-
     public function getFacets() {
-        if(!$this->loaded) $this->load();
+        if(!$this->_loaded) $this->load();
         return $this->_facets;
     }
 
@@ -120,7 +111,10 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
     }
 
     public function count() {
+        $p = $this->_currentPage;
+        $this->_currentPage = 1;
         $res = $this->get();
+        $this->_currentPage = $p;
         return $res->paging->total_items;
     }
 

@@ -236,7 +236,7 @@ class AuthProviderCombined implements AuthProvider {
 
             // check if we got the current person
             if($current_person === false) {
-                throw new InvalidAPIResponseException("Could not load current person.");
+                throw new InvalidAPIResponseException("Could not load current person after $attempts attempts.");
             } else if(isset($current_person->status)) {
                 // if the endpoint returns, that an active role is needed, request OP token
                 if($current_person->status->code == 403 && $current_person->status->message == "Active role required to view this content.") {
@@ -294,12 +294,12 @@ class AuthProviderCombined implements AuthProvider {
                             if(isset($this->_currentPerson->status)) {
                                 throw new InvalidAPIResponseException($this->_currentPerson->status->message);
                             } else {
-                                throw new InvalidAPIResponseException("current person endpoint does not contain a person object");
+                                throw new InvalidAPIResponseException("Current Person Endpoint does not contain a person object ($attempts Attempts)");
                             }
                         }
                     } else {
                         curl_close($req2);
-                        throw new InvalidAuthResponseException("The GIS auth response does not match the requirements.");
+                        throw new InvalidAuthResponseException("The GIS auth response does not match the requirements. ($attempts Attempts)");
                     }
                 } else {
                     curl_close($req);
@@ -323,7 +323,7 @@ class AuthProviderCombined implements AuthProvider {
                 curl_close($req);
                 curl_close($req2);
 
-                throw new InvalidAPIResponseException("Response for current person does not contain a person");
+                throw new InvalidAPIResponseException("Response for current person does not contain a person. ($attempts Attempts)");
             }
         } else  {
             curl_close($req);
@@ -331,7 +331,7 @@ class AuthProviderCombined implements AuthProvider {
             if(strpos($res, "<h2>Invalid email or password.</h2>") !== false) {
                 throw new InvalidCredentialsException("Invalid email or password");
             } else {
-                throw new InvalidAuthResponseException("The GIS auth response does not match the requirements.");
+                throw new InvalidAuthResponseException("The GIS auth response does not match the requirements. ($attempts Attempts)");
             }
         }
     }

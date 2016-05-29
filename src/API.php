@@ -30,6 +30,7 @@ class API
             if(!isset($this->_subs[$name])) {
                 $this->_subs[$name] = APISubFactory::factory($this->_cache['subs'][$name], $this->_auth);
             }
+            return $this->_subs[$name];
         } else {
             trigger_error("Property " . $name . " does not exist.", E_USER_WARNING);
             return null;
@@ -38,6 +39,16 @@ class API
 
     public function __isset($name)
     {
-        return array_key_exists($name, $this->_cache);
+        return isset($this->_subs[$name]);
+    }
+
+    public function __unset($name) {
+        if(isset($this->_subs[$name])) {
+            unset($this->_subs[$name]);
+        }
+    }
+
+    public function exists($name) {
+        return (isset($this->_cache['subs'][$name]) && !$this->_cache['subs'][$name]['dynamic']);
     }
 }

@@ -21,16 +21,20 @@ class APIEndpoint extends API
     {
         if(isset($this->_cache['subs'][$name]) && !$this->_params['subs'][$name]['dynamic']) {
             if(!isset($this->_subs[$name])) {
-                $this->_subs[$name] = APISubFactory::factory($this->_cache['subs'][$name], $this->_auth);
+                $this->_subs[$name] = APISubFactory::factory($this->_cache['subs'][$name], $this->_auth, $this->_pathParams);
             }
             return $this->_subs[$name];
         } elseif(isset($this->_cache['params'][$name])) {
             if(!isset($this->_params[$name])) {
                 $this->_params[$name] = ParameterFactory::factory($this->_cache['params'][$name]);
             }
-            return $this->_params[$name];
+            if($this->_params[$name]->hasChilds() || $this->_params[$name] instanceof ParameterArrayType) {
+                return $this->_params[$name];
+            } else {
+                return $this->_params[$name]->get();
+            }
         } else {
-            trigger_error("Property " . $name . " does not exist", E_USER_WARNING);
+            trigger_error("Property " . $name . " does not exist", E_USER_ERROR);
             return null;
         }
     }
@@ -40,12 +44,18 @@ class APIEndpoint extends API
         if(isset($this->_cache['subs'][$name]) && !$this->_params['subs'][$name]['dynamic']) {
             trigger_error('Property ' . $name . ' is not a parameter', E_USER_ERROR);
         } elseif(isset($this->_cache['params'][$name])) {
-            if(!isset($this->_params[$name])) {
-                $this->_params[$name] = ParameterFactory::factory($this->_cache['params'][$name]);
-            }
             if(is_scalar($value)) {
+                if(!isset($this->_params[$name])) {
+                    $this->_params[$name] = ParameterFactory::factory($this->_cache['params'][$name]);
+                }
                 $this->_params[$name]->set($value);
             } elseif(is_array($value)) {
+                // recreate param to reset other keys and keep scalar value if existent
+                $v = ((isset($this->_params[$name]) && is_scalar($this->_params[$name]->value())) ? $this->_params[$name]->value() : null);
+                $this->_params[$name] = ParameterFactory::factory($this->_cache['params'][$name]);
+                $this->_params[$name]->value($v);
+
+                // proceed array
                 if($this->_params[$name] instanceof ParameterArrayType) {
                     foreach($value as $key => $v) {
                         $this->_params[$name][$key] = $v;
@@ -59,7 +69,7 @@ class APIEndpoint extends API
                 trigger_error("Invalid value for property " . $name, E_USER_ERROR);
             }
         } else {
-            trigger_error("Property " . $name . " does not exist", E_USER_WARNING);
+            trigger_error("Property " . $name . " does not exist", E_USER_ERROR);
             return null;
         }
     }
@@ -77,11 +87,11 @@ class APIEndpoint extends API
 
     public function __isset($name)
     {
-        return isset($this->_subs[name]) || isset($this->_params[$name]);
+        return isset($this->_subs[$name]) || isset($this->_params[$name]);
     }
 
     public function exists($name) {
-        return array_key_exists($name, $this->_cache['subs']) || array_key_exists($name, $this->_cache['params']);
+        return ((isset($this->_cache['subs'][$name]) && !$this->_cache['subs'][$name]['dynamic']) || isset($this->_cache['params'][$name]));
     }
 
     public function getOperations() {
@@ -163,9 +173,9 @@ class APIEndpoint extends API
                     // gis hack (replace numerical array keys with appending array key
                     $params = preg_replace('/(%5B[0-9]*%5D)/', '%5B%5D', $params);
 
-                    $url .= '?' . $params . '&';
+                    $url .= '?' . $params . '&access_token=';
                 } else {
-                    $url .= '?';
+                    $url .= '?access_token=';
                 }
 
                 $req = curl_init();
@@ -174,7 +184,7 @@ class APIEndpoint extends API
 
                 $attempts = 0;
                 $res = false;
-                while(!$res && $attempts < 3) {
+                while($res === false && $attempts < 3) {
                     curl_setopt($req, CURLOPT_URL, $url . $this->_auth->getToken());
                     $res = curl_exec($req);
                     if(curl_getinfo($req, CURLINFO_HTTP_CODE) == 401 && $attempts < 2) {
@@ -193,22 +203,18 @@ class APIEndpoint extends API
         }
     }
 
-    public function reset() {
-        $this->_params = array();
-    }
-
     private function payloadRequest($operation) {
         if(in_array($operation, $this->_cache['operations'])) {
             if ($this->valid($operation)) {
-                $url = $this->baseUrl();
-                $params = json_encode($this->gatherParams($operation));
+                $url = $this->baseUrl() . '?access_token=';
+                $params = json_encode($this->gatherParams($operation), JSON_BIGINT_AS_STRING);
 
                 $req = curl_init();
                 curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
 
                 $res = false;
                 $attempts = 0;
-                while(!$res && $attempts < 3) {
+                while($res === false && $attempts < 3) {
                     curl_setopt($req, CURLOPT_URL, $url . $this->_auth->getToken());
                     curl_setopt($req, CURLOPT_CUSTOMREQUEST, $operation);
                     curl_setopt($req, CURLOPT_POSTFIELDS, $params);

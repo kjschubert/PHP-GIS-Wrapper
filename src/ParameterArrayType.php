@@ -32,7 +32,11 @@ class ParameterArrayType extends ParameterDefaultType implements \ArrayAccess, \
         if(!isset($this->_values[$offset])) {
             $this->_values[$offset] = new ParameterDefaultType($this->_cache);
         }
-        return $this->_values[$offset];
+        if($this->_values[$offset]->hasChilds() || $this->_values[$offset] instanceof ParameterArrayType) {
+            return $this->_values[$offset];
+        } else {
+            return $this->_values[$offset]->value();
+        }
     }
 
     public function offsetSet($offset, $value)
@@ -65,7 +69,11 @@ class ParameterArrayType extends ParameterDefaultType implements \ArrayAccess, \
 
     public function current()
     {
-        return $this->_values[$this->_currentKeys[$this->_currentKey]];
+        if($this->_values[$this->_currentKeys[$this->_currentKey]]->hasChilds() || $this->_values[$this->_currentKeys[$this->_currentKey]] instanceof ParameterArrayType) {
+            return $this->_values[$this->_currentKeys[$this->_currentKey]];
+        } else {
+            return $this->_values[$this->_currentKeys[$this->_currentKey]]->value();
+        }
     }
 
     public function next()
@@ -93,7 +101,7 @@ class ParameterArrayType extends ParameterDefaultType implements \ArrayAccess, \
         if($operation === null) {
             return isset($this->_currentKeys[$this->_currentKey]);
         } else {
-            if(in_array($operation, $this->_cache['operations'])) {
+            if(isset($this->_cache['operations'][$operation])) {
                 if($this->_cache['operations'][$operation]['type'] == "Array") {
                     if($this->hasChilds()) {
                         foreach ($this->_values as $value) {
@@ -103,11 +111,15 @@ class ParameterArrayType extends ParameterDefaultType implements \ArrayAccess, \
                         }
                         return true;
                     } else {
-                        if(is_scalar($this->_value) && $this->_value !== null) {
-                            return true;
-                        } else {
+                        if($this->_cache['operations'][$operation]['required'] && count($this->_values) == 0) {
                             return false;
                         }
+                        foreach ($this->_values as $value) {
+                            if(!is_scalar($value->value()) || $value->value() === null) {
+                                return false;
+                            }
+                        }
+                        return true;
                     }
                 } else {
                     return parent::valid($operation);
@@ -115,8 +127,6 @@ class ParameterArrayType extends ParameterDefaultType implements \ArrayAccess, \
             } else {
                 return true;
             }
-
-
         }
     }
 
@@ -138,11 +148,5 @@ class ParameterArrayType extends ParameterDefaultType implements \ArrayAccess, \
         } else {
             return parent::getRequestValue($operation);
         }
-    }
-
-    public function reset() {
-        parent::reset();
-        $this->_values = array();
-        $this->rewind();
     }
 }

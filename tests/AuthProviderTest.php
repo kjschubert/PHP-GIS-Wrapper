@@ -3,7 +3,15 @@
 require dirname(__DIR__) . '/vendor/autoload.php';
 require __DIR__ . '/config.php';
 
-class BasicTest extends PHPUnit_Framework_TestCase
+/**
+ * Class AuthProviderTest
+ *
+ * Testing the AuthProviders
+ *
+ * @author Karl Johann Schubert <karljohann@familieschubi.de>
+ * @version 0.2
+ */
+class AuthProviderTest extends PHPUnit_Framework_TestCase
 {
 
     /**
@@ -37,6 +45,13 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $user->getToken();
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderEXPA::__construct
+     * @covers \GISwrapper\AuthProviderEXPA::getToken
+     * @covers \GISwrapper\AuthProviderEXPA::getNewToken
+     * @covers \GISwrapper\AuthProviderEXPA::getExpiresAt
+     * @covers \GISwrapper\AuthProviderEXPA::generateNewToken
+     */
     public function testAuthProviderEXPA() {
         $user = new \GISwrapper\AuthProviderEXPA(EXPA_USER, EXPA_PW);
         $token = $user->getToken();
@@ -70,6 +85,14 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($token, $token2, "New token wasn't saved");
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderOP::__construct
+     * @covers \GISwrapper\AuthProviderOP::getToken
+     * @covers \GISwrapper\AuthProviderOP::getNewToken
+     * @covers \GISwrapper\AuthProviderOP::getExpiresAt
+     * @covers \GISwrapper\AuthProviderOP::generateNewToken
+     * @covers \GISwrapper\AuthProviderOP::proceedToken
+     */
     public function testAuthProviderOP() {
         $user = new \GISwrapper\AuthProviderOP(OP_USER, OP_PW);
         $token = $user->getToken();
@@ -103,6 +126,17 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($token, $token2, "New token wasn't saved");
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderCombined::__construct
+     * @covers \GISwrapper\AuthProviderCombined::getToken
+     * @covers \GISwrapper\AuthProviderCombined::getNewToken
+     * @covers \GISwrapper\AuthProviderCombined::getExpiresAt
+     * @covers \GISwrapper\AuthProviderCombined::generateNewToken
+     * @covers \GISwrapper\AuthProviderCombined::isEXPA
+     * @covers \GISwrapper\AuthProviderCombined::isOP
+     * @covers \GISwrapper\AuthProviderCombined::getType
+     * @covers \GISwrapper\AuthProviderCombined::getCurrentPerson
+     */
     public function testAuthProviderCombinedEXPA() {
         $user = new \GISwrapper\AuthProviderCombined(EXPA_USER, EXPA_PW);
         $token = $user->getToken();
@@ -151,6 +185,17 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $this->assertNotCount(0, $user->getCurrentPerson()->current_positions);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderCombined::__construct
+     * @covers \GISwrapper\AuthProviderCombined::getToken
+     * @covers \GISwrapper\AuthProviderCombined::getNewToken
+     * @covers \GISwrapper\AuthProviderCombined::getExpiresAt
+     * @covers \GISwrapper\AuthProviderCombined::generateNewToken
+     * @covers \GISwrapper\AuthProviderCombined::isEXPA
+     * @covers \GISwrapper\AuthProviderCombined::isOP
+     * @covers \GISwrapper\AuthProviderCombined::getType
+     * @covers \GISwrapper\AuthProviderCombined::getCurrentPerson
+     */
     public function testAuthProviderCombinedOP() {
         $user = new \GISwrapper\AuthProviderCombined(OP_USER, OP_PW);
         $token = $user->getToken();
@@ -199,6 +244,14 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $this->assertCount(0, $user->getCurrentPerson()->current_positions);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderEXPA::__construct
+     * @covers \GISwrapper\AuthProviderEXPA::getToken
+     * @covers \GISwrapper\AuthProviderEXPA::getExpiresAt
+     * @covers \GISwrapper\AuthProviderEXPA::generateNewToken
+     * @covers \GISwrapper\AuthProviderEXPA::getSession
+     * @covers \GISwrapper\AuthProviderEXPA::setSession
+     */
     public function testAuthProviderEXPAsession() {
         $session = './' . md5(microtime) . '.session';
 
@@ -234,6 +287,15 @@ class BasicTest extends PHPUnit_Framework_TestCase
         unlink($session);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderOP::__construct
+     * @covers \GISwrapper\AuthProviderOP::getToken
+     * @covers \GISwrapper\AuthProviderOP::getExpiresAt
+     * @covers \GISwrapper\AuthProviderOP::generateNewToken
+     * @covers \GISwrapper\AuthProviderOP::proceedToken
+     * @covers \GISwrapper\AuthProviderOP::getSession
+     * @covers \GISwrapper\AuthProviderOP::setSession
+     */
     public function testAuthProviderOPsession() {
         $session = './' . md5(microtime) . '.session';
 
@@ -269,6 +331,15 @@ class BasicTest extends PHPUnit_Framework_TestCase
         unlink($session);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderCombined::__construct
+     * @covers \GISwrapper\AuthProviderCombined::getToken
+     * @covers \GISwrapper\AuthProviderCombined::getExpiresAt
+     * @covers \GISwrapper\AuthProviderCombined::generateNewToken
+     * @covers \GISwrapper\AuthProviderCombined::getSession
+     * @covers \GISwrapper\AuthProviderCombined::setSession
+     * @covers \GISwrapper\AuthProviderCombined::isOP
+     */
     public function testAuthProviderCombinedOPsession() {
         $session = './' . md5(microtime) . '.session';
 
@@ -307,6 +378,15 @@ class BasicTest extends PHPUnit_Framework_TestCase
         unlink($session);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderCombined::__construct
+     * @covers \GISwrapper\AuthProviderCombined::getToken
+     * @covers \GISwrapper\AuthProviderCombined::getExpiresAt
+     * @covers \GISwrapper\AuthProviderCombined::generateNewToken
+     * @covers \GISwrapper\AuthProviderCombined::getSession
+     * @covers \GISwrapper\AuthProviderCombined::setSession
+     * @covers \GISwrapper\AuthProviderCombined::isEXPA
+     */
     public function testAuthProviderCombinedEXPAsession() {
         $session = './' . md5(microtime) . '.session';
 
@@ -345,6 +425,12 @@ class BasicTest extends PHPUnit_Framework_TestCase
         unlink($session);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderEXPA::__construct
+     * @covers \GISwrapper\AuthProviderEXPA::getToken
+     * @covers \GISwrapper\AuthProviderEXPA::generateNewToken
+     * @covers \GISwrapper\AuthProviderEXPA::setSession
+     */
     public function testAuthProviderEXPAinvalidSession() {
         // create session file
         $session = './' . md5(microtime) . '.session';
@@ -354,11 +440,18 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $user->setSession($session);
         $token = $user->getToken();
 
-        $this->assertStringMatchesFormat('%x', $token);
+        $this->assertStringMatchesFormat('%x', $token, "Token doesn't match format");
 
         unlink($session);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderOP::__construct
+     * @covers \GISwrapper\AuthProviderOP::getToken
+     * @covers \GISwrapper\AuthProviderOP::generateNewToken
+     * @covers \GISwrapper\AuthProviderOP::proceedToken
+     * @covers \GISwrapper\AuthProviderOP::setSession
+     */
     public function testAuthProviderOPinvalidSession() {
         // create session file
         $session = './' . md5(microtime) . '.session';
@@ -368,11 +461,18 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $user->setSession($session);
         $token = $user->getToken();
 
-        $this->assertStringMatchesFormat('%x', $token);
+        $this->assertStringMatchesFormat('%x', $token, "Token doesn't match format");
 
         unlink($session);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderCombined::__construct
+     * @covers \GISwrapper\AuthProviderCombined::getToken
+     * @covers \GISwrapper\AuthProviderCombined::generateNewToken
+     * @covers \GISwrapper\AuthProviderCombined::setSession
+     * @covers \GISwrapper\AuthProviderCombined::isEXPA
+     */
     public function testAuthProviderCombinedEXPAinvalidSession() {
         // create session file
         $session = './' . md5(microtime) . '.session';
@@ -382,11 +482,19 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $user->setSession($session);
         $token = $user->getToken();
 
-        $this->assertStringMatchesFormat('%x', $token);
+        $this->assertStringMatchesFormat('%x', $token, "Token doesn't match format");
+        $this->assertTrue($user->isEXPA(), "token is not an EXPA token");
 
         unlink($session);
     }
 
+    /**
+     * @covers \GISwrapper\AuthProviderCombined::__construct
+     * @covers \GISwrapper\AuthProviderCombined::getToken
+     * @covers \GISwrapper\AuthProviderCombined::generateNewToken
+     * @covers \GISwrapper\AuthProviderCombined::setSession
+     * @covers \GISwrapper\AuthProviderCombined::isOP
+     */
     public function testAuthProviderCombinedOPinvalidSession() {
         // create session file
         $session = './' . md5(microtime) . '.session';
@@ -396,7 +504,8 @@ class BasicTest extends PHPUnit_Framework_TestCase
         $user->setSession($session);
         $token = $user->getToken();
 
-        $this->assertStringMatchesFormat('%x', $token);
+        $this->assertStringMatchesFormat('%x', $token, "Token doesn't match format");
+        $this->assertTrue($user->isOP(), "token is not an OP token");
 
         unlink($session);
     }

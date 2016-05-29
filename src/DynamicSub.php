@@ -40,8 +40,7 @@ class DynamicSub implements \ArrayAccess
         }
     }
 
-    public function offsetExists($offset)
-    {
+    public function exists($offset) {
         $url = $this->_cache['subs'][$this->_dynamicSub]['path'];
 
         // replace all dynamic path parts
@@ -53,7 +52,15 @@ class DynamicSub implements \ArrayAccess
         $url = str_replace($this->_dynamicSub, $offset, $url) . '?';
 
         // get request
-        $res = GET::request($url, $this->_auth);
+        try {
+            $res = GET::request($url, $this->_auth);
+        } catch(NoResponseException $e) {
+            if(substr($e, 0, 4) == 'http') {
+                throw $e;
+            } else {
+                return false;
+            }
+        }
 
         // check if object exists
         if(is_object($res)) {
@@ -65,6 +72,11 @@ class DynamicSub implements \ArrayAccess
         } else {
             return false;
         }
+    }
+
+    public function offsetExists($offset)
+    {
+        return isset($this->_dynamicInstances[$offset]);
     }
 
     public function offsetGet($offset)
@@ -89,9 +101,5 @@ class DynamicSub implements \ArrayAccess
     public function offsetUnset($offset)
     {
         unset($this->_dynamicInstances[$offset]);
-    }
-
-    public function reset() {
-        $this->_dynamicInstances = array();
     }
 }

@@ -1,0 +1,29 @@
+{
+  "paging": {
+    "current_page": "1",
+    "total_pages": "2",
+    "total_items": "8"
+  },
+  "facets": {
+    "statusA": "12",
+    "statusB": "24"
+  },
+  "data": [
+    {
+      "id": 1,
+      "name": "element one"
+    },
+    {
+      "id": 2,
+      "name": "element two"
+    },
+    {
+      "id": 3,
+      "name": "element three"
+    },
+    {
+      "id": 4,
+      "name": "element four"
+    }
+  ]
+}

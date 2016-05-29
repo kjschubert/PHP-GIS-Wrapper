@@ -15,7 +15,7 @@ class GET
         $attempts = 0;
         $res = false;
         while(!$res && $attempts < 3) {
-            $res = file_get_contents($url . 'access_token=' . $auth->getToken());
+            $res = @file_get_contents($url . 'access_token=' . $auth->getToken());
             if($res !== false) {
                 $res = json_decode($res);
                 if($res !== null) {

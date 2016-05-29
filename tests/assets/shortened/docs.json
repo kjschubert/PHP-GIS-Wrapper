@@ -1,0 +1,1 @@
+{"apiVersion":"v2","swaggerVersion":"1.2","produces":["application/json"],"operations":[],"apis":[{"path":"/applications.{format}"},{"path":"/organisations.{format}"}],"info":{},"basePath":"./tests/assets/shortened"}

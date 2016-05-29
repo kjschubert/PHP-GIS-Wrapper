@@ -58,6 +58,12 @@ class ParameterDefaultType
                 if(is_scalar($value)) {
                     $this->_subparams[$name]->value($value);
                 } elseif(is_array($value)) {
+                    // recreate subparam to reset other keys and keep scalar value if existent
+                    $v = ((isset($this->_subparams[$name]) && is_scalar($this->_subparams[$name]->value())) ? $this->_subparams[$name]->value() : null);
+                    $this->_subparams[$name] = ParameterFactory::factory($this->_cache['subparams'][$name]);
+                    $this->_subparams[$name]->value($v);
+
+                    //proceed array
                     if($this->_subparams[$name] instanceof ParameterArrayType) {
                         foreach($value as $key => $v) {
                             $this->_subparams[$name]->offsetSet($key, $v);
@@ -74,6 +80,29 @@ class ParameterDefaultType
         } else {
             trigger_error("Property " . $name . " does not exist.", E_USER_WARNING);
         }
+    }
+
+    public function __toString()
+    {
+        if($this->hasChilds()) {
+            return "ArrayParameter";
+        } else {
+            return strval($this->_value);
+        }
+    }
+
+    public function __unset($name) {
+        if(isset($this->_subparams[$name])) {
+            unset($this->_subparams[$name]);
+        }
+    }
+
+    public function __isset($name) {
+        return isset($this->_subparams[$name]);
+    }
+
+    public function exists($name) {
+        return isset($this->_cache['subparams'][$name]);
     }
 
     /**
@@ -97,6 +126,7 @@ class ParameterDefaultType
                 }
             } else {
                 if(is_array($value)) {
+                    $this->_subparams = array();
                     foreach($value as $key => $v) {
                         if(array_key_exists($key, $this->_cache['subparams'])) {
                             if(!isset($this->_subparams[$key])) {
@@ -166,7 +196,7 @@ class ParameterDefaultType
      * @throws InvalidParameterTypeException
      */
     public function valid($operation) {
-        if(in_array($operation, $this->_cache['operations'])) {
+        if(array_key_exists($operation, $this->_cache['operations'])) {
             switch($this->_cache['operations'][$operation]['type']) {
                 case 'Integer':
                     if(is_int($this->_value)) {
@@ -204,11 +234,12 @@ class ParameterDefaultType
                 case 'Hash':
                     foreach($this->_cache['subparams'] as $name => $subparam) {
                         if(isset($this->_subparams[$name])) {
-                            if(!$this->_subparams[$name]->valid()) return false;
+                            if(!$this->_subparams[$name]->valid($operation)) return false;
                         } elseif($subparam['operations'][$operation]['required']) {
                             return false;
                         }
                     }
+                    return true;
                     break;
 
                 case 'Array':
@@ -233,15 +264,7 @@ class ParameterDefaultType
             return true;
         }
     }
-
-    /**
-     * resets the parameter and its children
-     */
-    public function reset() {
-        $this->_value = null;
-        $this->_subparams = array();
-    }
-
+    
     /**
      * @param $operation
      * @return array|null|string

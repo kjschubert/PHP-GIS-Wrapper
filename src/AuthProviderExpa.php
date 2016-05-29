@@ -185,7 +185,7 @@ class AuthProviderEXPA implements AuthProvider {
             if(strpos($res, "<h2>Invalid email or password.</h2>") !== false) {
                 throw new InvalidCredentialsException("Invalid email or password");
             } else {
-                throw new InvalidAuthResponseException("The GIS auth response does not match the requirements.");
+                throw new InvalidAuthResponseException("The GIS auth response does not match the requirements. ($attempts Attempts)");
             }
         }
     }
