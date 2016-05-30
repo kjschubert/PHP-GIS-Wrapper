@@ -220,7 +220,7 @@ In this version the PHP-GIS-Wrapper was completely refactored. The most importan
 This was the initial version of the PHP-GIS-Wrapper. It only supported GET requests.
 - Originally there was only one AuthProvider called AuthProviderUser
 - With the introduction of the GIS v2 this Provider was updated to the new GIS Identity, but then only supported EXPA users
-- Later one the AuthProviderUser was replaced by AuthProviderEXPA, AuthProviderOP and AuthProviderCombined
+- Later the AuthProviderUser was replaced by AuthProviderEXPA, AuthProviderOP and AuthProviderCombined
 
 # FAQ
 If you have any questions, feature wishes, problems or found a bug don't hesitate to send an email to karljohann@familieschubi.de
@@ -228,4 +228,6 @@ If you have any questions, feature wishes, problems or found a bug don't hesitat
 If you found a bug you can also directly open an issue in the github repository.
 
 If you integrated the PHP GIS Wrapper as Provider or Service in a framework or used it in one of your projects feel free to drop me a message to feature it here.
+
+If you wrote another example just send a pull request
 
