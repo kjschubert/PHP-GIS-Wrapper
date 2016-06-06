@@ -146,7 +146,7 @@ class APIEndpoint extends API
             foreach($this->_cache['params'] as $name => $param) {
                 if(isset($this->_params[$name])) {
                     if (!$this->_params[$name]->valid($operation)) return false;
-                } elseif($param['operations'][$operation]['required']) {
+                } elseif(isset($param['operations'][$operation]) && $param['operations'][$operation]['required']) {
                     return false;
                 }
             }

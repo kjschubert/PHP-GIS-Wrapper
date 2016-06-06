@@ -257,7 +257,7 @@ class ParameterDefaultType
                     foreach($this->_cache['subparams'] as $name => $subparam) {
                         if(isset($this->_subparams[$name])) {
                             if(!$this->_subparams[$name]->valid($operation)) return false;
-                        } elseif($subparam['operations'][$operation]['required']) {
+                        } elseif(isset($subparam['operations'][$operation]) && $subparam['operations'][$operation]['required']) {
                             return false;
                         }
                     }
@@ -269,7 +269,7 @@ class ParameterDefaultType
                         foreach($this->_cache['subparams'] as $name => $subparam) {
                             if(isset($this->_subparams[$name])) {
                                 if(!$this->_subparams[$name]->valid($operation)) return false;
-                            } elseif($subparam['operations'][$operation]['required']) {
+                            } elseif(isset($subparam['operations'][$operation]) && $subparam['operations'][$operation]['required']) {
                                 return false;
                             }
                         }
