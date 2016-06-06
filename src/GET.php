@@ -19,25 +19,25 @@ class GET
      * @throws NoResponseException
      */
     public static function request($url, $auth) {
+        // init curl request
+        $req = curl_init();
+        curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
+
         $attempts = 0;
         $res = false;
-        while(!$res && $attempts < 3) {
-            $res = @file_get_contents($url . 'access_token=' . $auth->getToken());
-            if($res !== false) {
+        while($res === false && $attempts < 3) {
+            curl_setopt($req, CURLOPT_URL, $url . 'access_token=' . $auth->getToken());
+            $res = curl_exec($req);
+            if(curl_getinfo($req, CURLINFO_HTTP_CODE) == 401 && $attempts < 2) {
+                $auth->getNewToken();
+                $res = false;
+            } elseif($res) {
                 $res = json_decode($res);
-                if($res !== null) {
-                    if(isset($res->status)) {
-                        if($res->status->code == '401' && $attempts < 2) {
-                            $res = false;
-                            $auth->getNewToken();
-                        }
-                    }
-                } else {
-                    $res = false;
-                }
+                if($res === null) $res = false;
             }
             $attempts++;
         }
+
         // validate response
         if($res === false) {
             throw new NoResponseException("Could not load endpoint " . $url);

@@ -206,6 +206,8 @@ The PHP GIS Wrapper is tested with PHP unit. All the tests can be found in the f
 If you send a pull request, please make sure that your code is covered and run phpunit in the root folder before you commit. Normally phpunit will automatically recognize the file phpunit.xml in the root folder.
 
 # Changelog
+## 0.2.3
+- Fixed the token regeneration when a GET request runs with an expired token
 ## 0.2.2
 - Fixed an issue in the parameter validation, which occured when parameters of different methods had the same name
 ## 0.2.1
