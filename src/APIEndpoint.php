@@ -40,7 +40,7 @@ class APIEndpoint extends API
      */
     public function __get($name)
     {
-        if(isset($this->_cache['subs'][$name]) && !$this->_params['subs'][$name]['dynamic']) {
+        if(isset($this->_cache['subs'][$name]) && !$this->_cache['subs'][$name]['dynamic']) {
             if(!isset($this->_subs[$name])) {
                 $this->_subs[$name] = APISubFactory::factory($this->_cache['subs'][$name], $this->_auth, $this->_pathParams);
             }
@@ -67,7 +67,7 @@ class APIEndpoint extends API
      */
     public function __set($name, $value)
     {
-        if(isset($this->_cache['subs'][$name]) && !$this->_params['subs'][$name]['dynamic']) {
+        if(isset($this->_cache['subs'][$name]) && !$this->_cache['subs'][$name]['dynamic']) {
             trigger_error('Property ' . $name . ' is not a parameter', E_USER_ERROR);
         } elseif(isset($this->_cache['params'][$name])) {
             if(is_scalar($value) || $value instanceof \DateTime) {
