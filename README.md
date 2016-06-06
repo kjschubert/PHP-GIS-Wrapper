@@ -206,7 +206,9 @@ The PHP GIS Wrapper is tested with PHP unit. All the tests can be found in the f
 If you send a pull request, please make sure that your code is covered and run phpunit in the root folder before you commit. Normally phpunit will automatically recognize the file phpunit.xml in the root folder.
 
 # Changelog
-## v0.2
+## 0.2.1
+- improved stability of the swagger parsing
+## 0.2
 In this version the PHP-GIS-Wrapper was completely refactored. The most important changes are:
 - New system architecture, especially for the swagger parser. This leads to cleaner source code and a big performance boost.
 - Ability to cache the swagger parsing result, which provides even better performance, especially for big projects
@@ -216,7 +218,7 @@ In this version the PHP-GIS-Wrapper was completely refactored. The most importan
 - Validation of Parameter types
 - the PHP GIS Wrapper became a Composer Package
 
-## v0.1
+## 0.1
 This was the initial version of the PHP-GIS-Wrapper. It only supported GET requests.
 - Originally there was only one AuthProvider called AuthProviderUser
 - With the introduction of the GIS v2 this Provider was updated to the new GIS Identity, but then only supported EXPA users

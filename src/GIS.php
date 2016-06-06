@@ -151,7 +151,7 @@ class GIS
 
         if($root === false) {
             throw new NoResponseException("Could not load swagger root file");
-        } elseif($root === null || !isset($root->apis) || !is_array($root->apis)) {
+        } elseif($root === null || !isset($root->apis) || !is_array($root->apis) || !isset($root->basePath)) {
             throw new InvalidSwaggerFormatException("Invalid swagger file");
         } else {
             if(!in_array('application/json', $root->produces)) {
@@ -203,7 +203,7 @@ class GIS
             foreach($manifest->apis as $api) {
                 // prepare endpoint
                 $endpoint = array(
-                    'summary' => $api->summary,
+                    'summary' => (isset($api->summary)) ? $api->summary : null,
                     'path' => str_replace('.{format}', '.json', $manifest->basePath . $api->path),
                     'endpoint' => true,
                     'dynamic' => false,
@@ -274,8 +274,8 @@ class GIS
 
                 // place endpoint
                 if(str_replace('.{format}', '', $api->path) == '/' . $manifest->apiVersion . '/' . $baseName) { // root endpoint
-                    if(is_array($cache['subs'])) $endpoint['subs'] = $cache['subs'];
-                    if($cache['dynamicSub']) $endpoint['dynamicSub'] = true;
+                    if(isset($cache['subs']) && is_array($cache['subs'])) $endpoint['subs'] = $cache['subs'];
+                    if(isset($cache['dynamicSub']) && $cache['dynamicSub']) $endpoint['dynamicSub'] = true;
 
                     $cache = $endpoint;
                 } elseif(count($path) == 1) {   // level 1 sub endpoint
@@ -304,7 +304,7 @@ class GIS
                         $ref = &$ref['subs'][$p];
                     }
                     // check for already added subs as well as the dynamicSub property and keep them
-                    if(isset($ref['subs'])) $endpoint['subs'] = $ref['subs'];
+                    if(isset($ref['subs']) && is_array($ref['subs'])) $endpoint['subs'] = $ref['subs'];
                     if(isset($ref['dynamicSub']) && $ref['dynamicSub']) $endpoint['dynamicSub'] = true;
 
                     // place endpoint
