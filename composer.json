@@ -13,7 +13,10 @@
         "lib-curl": "*"
     },
     "autoload": {
-        "psr-4": {"GISwrapper\\": "src/"},
+        "psr-4": {
+            "GISwrapper\\": "src/",
+            "GISwrapper\\Providers\\": "providers/"
+        },
         "files": [
             "src/Exceptions.php"
         ]
