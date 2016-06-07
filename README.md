@@ -220,14 +220,19 @@ Currently we support the PHP Framework Lumen and thereby also Laravel. Please ch
 - added ServiceProvider for Lumen (should also work with Laravel)
 - added `currentPage()` and `setStartPage($page)` function to paged endpoints (tests still missing)
 - updated Unit Tests
+
 ## 0.2.4
 - Fixed some minor bugs in the API Endpoint
+
 ## 0.2.3
 - Fixed the token regeneration when a GET request runs with an expired token
+
 ## 0.2.2
 - Fixed an issue in the parameter validation, which occured when parameters of different methods had the same name
+
 ## 0.2.1
 - improved stability of the swagger parsing
+
 ## 0.2
 In this version the PHP-GIS-Wrapper was completely refactored. The most important changes are:
 - New system architecture, especially for the swagger parser. This leads to cleaner source code and a big performance boost.
