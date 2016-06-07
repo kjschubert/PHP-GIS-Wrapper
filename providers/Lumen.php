@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Providers;
+namespace GISwrapper\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
