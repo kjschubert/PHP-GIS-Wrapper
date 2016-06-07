@@ -14,7 +14,7 @@ class Lumen extends ServiceProvider
     public function register()
     {
         $this->app->bind('GIS', function() {
-            return new GISFactory();
+            return new LumenFactory();
         });
     }
 }
