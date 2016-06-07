@@ -509,4 +509,31 @@ class AuthProviderTest extends PHPUnit_Framework_TestCase
 
         unlink($session);
     }
+
+    /**
+     * @covers \GISwrapper\AuthProviderShadow::__construct
+     * @covers \GISwrapper\AuthProviderShadow::getToken
+     * @covers \GISwrapper\AuthProviderShadow::getNewToken
+     * @covers \GISwrapper\AuthProviderShadow::getAuthProvider
+     */
+    public function testAuthProviderShadow() {
+        $sub = new \GISwrapper\AuthProviderEXPA(EXPA_USER, EXPA_PW);
+        $user = new \GISwrapper\AuthProviderShadow("sometoken", $sub);
+        $this->assertEquals("sometoken", $user->getToken());
+
+        $token = $user->getNewToken();
+        $this->assertNotEquals("sometoken", $token);
+        $this->assertStringMatchesFormat('%x', $token, "Token doesn't match format");
+
+        $this->assertEquals($sub, $user->getAuthProvider());
+    }
+
+    /**
+     * @expectedException \GISwrapper\InvalidCredentialsException
+     * @expectedExceptionMessage Could not get token from sub auth provider
+     */
+    public function testAuthProviderShadowException() {
+        $user = new \GISwrapper\AuthProviderShadow("sometoken");
+        $user->getNewToken();
+    }
 }

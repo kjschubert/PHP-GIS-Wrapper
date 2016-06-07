@@ -42,6 +42,7 @@ class GET
         if($res === false) {
             throw new NoResponseException("Could not load endpoint " . $url);
         } elseif($res == null) {
+            echo curl_getinfo($req, CURLOPT_URL);
             throw new InvalidAPIResponseException("Invalid Response on " . $url);
         } else {
             return $res;

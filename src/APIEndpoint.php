@@ -23,6 +23,12 @@ class APIEndpoint extends API
     protected $_currentPage;
 
     /**
+     * @var int
+     * value for parameter per_page of paged endpoint, declared here for use in the get method
+     */
+    protected $_perPage;
+
+    /**
      * APIEndpoint constructor.
      * @param array $cache parsed swagger file for this api
      * @param AuthProvider $auth
@@ -169,9 +175,14 @@ class APIEndpoint extends API
             if($this->valid('GET')) {
                 $url = $this->getQueryUrl('GET');
 
-                // check if we need to add a page
+                // check if we need to add the page parameter
                 if(isset($this->_currentPage)) {
                     $url .= 'page=' . $this->_currentPage . '&';
+                }
+
+                // check if we need to add the per_page parameter
+                if(isset($this->_perPage)) {
+                    $url .= 'per_page=' . $this->_perPage . '&';
                 }
 
                 // try to load

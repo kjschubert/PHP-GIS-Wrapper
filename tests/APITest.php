@@ -50,7 +50,7 @@ class APITest extends PHPUnit_Framework_TestCase
                 'subs' => array(
                     '{dynamic}' => array(
                         'summary' => '',
-                        'path' => __DIR__ . '/{dynamic}.json',
+                        'path' => 'file://' . __DIR__ . '/{dynamic}.json',
                         'endpoint' => true,
                         'dynamic' => true,
                         'dynamicSub' => false,
@@ -67,7 +67,7 @@ class APITest extends PHPUnit_Framework_TestCase
             ),
             'api_paged_endpoint' => array(
                 'summary' => '',
-                'path' => __DIR__ . '/paged.json',
+                'path' => 'file://' . __DIR__ . '/paged.json',
                 'endpoint' => true,
                 'dynamic' => false,
                 'dynamicSub' => false,
@@ -85,7 +85,7 @@ class APITest extends PHPUnit_Framework_TestCase
                 'subs' => array(
                     '{dynamic}' => array(
                         'summary' => '',
-                        'path' => __DIR__ . '/{dynamic}.json',
+                        'path' => 'file://' . __DIR__ . '/{dynamic}.json',
                         'endpoint' => true,
                         'dynamic' => true,
                         'dynamicSub' => false,
@@ -120,7 +120,7 @@ class APITest extends PHPUnit_Framework_TestCase
                 'subs' => array(
                     '{dynamic}' => array(
                         'summary' => '',
-                        'path' => __DIR__ . '/{dynamic}.json',
+                        'path' => 'file://' . __DIR__ . '/{dynamic}.json',
                         'endpoint' => true,
                         'dynamic' => true,
                         'dynamicSub' => false,
@@ -139,7 +139,7 @@ class APITest extends PHPUnit_Framework_TestCase
                 'subs' => array(
                     'activeRole' => array(
                         'summary' => '',
-                        'path' => __DIR__ . '/activeRole.json',
+                        'path' => 'file://' . __DIR__ . '/activeRole.json',
                         'endpoint' => true,
                         'dynamic' => false,
                         'dynamicSub' => false,
@@ -150,7 +150,7 @@ class APITest extends PHPUnit_Framework_TestCase
                     ),
                     'unauthorized' => array(
                         'summary' => '',
-                        'path' => __DIR__ . '/unauthorized.json',
+                        'path' => 'file://' . __DIR__ . '/unauthorized.json',
                         'endpoint' => true,
                         'dynamic' => false,
                         'dynamicSub' => false,
@@ -161,7 +161,7 @@ class APITest extends PHPUnit_Framework_TestCase
                     ),
                     'invalid' => array(
                         'summary' => '',
-                        'path' => __DIR__ . '/invalid.json',
+                        'path' => 'file://' . __DIR__ . '/invalid.json',
                         'endpoint' => true,
                         'dynamic' => false,
                         'dynamicSub' => false,
@@ -190,37 +190,29 @@ class APITest extends PHPUnit_Framework_TestCase
         $this->_files = array();
 
         // create testfile for dynamic Sub
-        $file1 = __DIR__ . '/12.json?access_token=' . $this->_user->getToken();
+        $file1 = __DIR__ . '/12.json';
         file_put_contents($file1, '{"id": "12", "name": "Test"}');
         $this->_files[] = $file1;
 
-        // create testfiles for pagedEndpoint
-        $file2 = __DIR__ . '/paged.json?access_token=' . $this->_user->getToken();
+        // create testfiles for pagedEndpoint (can not simulate the page parameter on the filesystem)
+        $file2 = __DIR__ . '/paged.json';
         file_put_contents($file2, file_get_contents(__DIR__ . '/assets/page1.json'));
         $this->_files[] = $file2;
 
-        $file3 = __DIR__ . '/paged.json?page=1&access_token=' . $this->_user->getToken();
-        file_put_contents($file3, file_get_contents(__DIR__ . '/assets/page1.json'));
+        // create testfile for ActiveRoleException
+        $file3 = __DIR__ . '/activeRole.json';
+        file_put_contents($file3, '{"status": {"code": "403", "message": "Active role required to view this content."}}');
         $this->_files[] = $file3;
 
-        $file4 = __DIR__ . '/paged.json?page=2&access_token=' . $this->_user->getToken();
-        file_put_contents($file4, file_get_contents(__DIR__ . '/assets/page2.json'));
+        // create testfile for InvalidAPIResponseExceptionException
+        $file4 = __DIR__ . '/unauthorized.json';
+        file_put_contents($file4, '{"status": {"code": "403", "message": "You are not authorized to perform the requested action"}}');
         $this->_files[] = $file4;
 
         // create testfile for ActiveRoleException
-        $file5 = __DIR__ . '/activeRole.json?access_token=' . $this->_user->getToken();
-        file_put_contents($file5, '{"status": {"code": "403", "message": "Active role required to view this content."}}');
+        $file5 = __DIR__ . '/invalid.json';
+        file_put_contents($file5, '{"status": {"code": "500", "message": "Server Error"}}');
         $this->_files[] = $file5;
-
-        // create testfile for InvalidAPIResponseExceptionException
-        $file6 = __DIR__ . '/unauthorized.json?access_token=' . $this->_user->getToken();
-        file_put_contents($file6, '{"status": {"code": "403", "message": "You are not authorized to perform the requested action"}}');
-        $this->_files[] = $file6;
-
-        // create testfile for ActiveRoleException
-        $file7 = __DIR__ . '/invalid.json?access_token=' . $this->_user->getToken();
-        file_put_contents($file7, '{"status": {"code": "500", "message": "Server Error"}}');
-        $this->_files[] = $file7;
     }
 
     public function testGIS() {
@@ -362,9 +354,14 @@ class APITest extends PHPUnit_Framework_TestCase
             $this->assertEquals("element", substr($el->name, 0, 7));
 
             $this->assertEquals($id, $el->id);
+
+            // check that we are not in an infinite loop
+            $this->assertLessThan(5, $i, "Loop running to long");
+
+            // increment $i
             $i++;
         }
-        $this->assertEquals(9, $i);
+        $this->assertEquals(5, $i);
 
         // check Facets
         $facets = $this->_gis->api_paged_endpoint->getFacets();
@@ -375,8 +372,8 @@ class APITest extends PHPUnit_Framework_TestCase
         $this->assertEquals(24, $facets->statusB);
 
         // test count
-        $this->assertEquals(8, $this->_gis->api_paged_endpoint->lastCount());
-        $this->assertCount(8, $this->_gis->api_paged_endpoint);
+        $this->assertEquals(4, $this->_gis->api_paged_endpoint->lastCount());
+        $this->assertCount(4, $this->_gis->api_paged_endpoint);
     }
 
     public function testEndpointPagedDynamicSub() {

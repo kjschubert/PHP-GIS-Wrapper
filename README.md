@@ -19,16 +19,20 @@ Please check the examples folder for a quick start. The explanations below are m
 ## AuthProviders
 The file `AuthProvider.php` provides an interface for Authentication Providers. The Purpose of an Authentication Provider is to provide an access token to access the GIS API.
 
-At the moment there are three Authentication Providers:
-* `AuthProviderExpa` to get an access token like you would login to EXPA.
-* `AuthProviderOP` to get an access token like you would login to OP.
-* `AuthProviderCombined` this provider tries to get an EXPA token and if it is invalid returns an OP token.
+At the moment there are three main Authentication Providers:
+* `AuthProviderExpa($username, $password)` to get an access token like you would login to EXPA.
+* `AuthProviderOP($username, $password)` to get an access token like you would login to OP.
+* `AuthProviderCombined($username, $password)` this provider tries to get an EXPA token and if it is invalid returns an OP token.
+
+Furthermore there are two special Authentication Providers
+* `AuthProviderShadow($tokan, $authProvider)` which takes a valid token as first argument and another AuthProvider as second argument. You may use this AuthProvider when you cache tokens.
+* `AuthProviderNationalIdentity($url)` which can be used with the customTokenFlow of the [AIESEC Identity](https://github.com/AIESEC-Egypt/aiesec-identity) Project.
 
 <i>Hint: If you want to synchronise your national or local systems with the GIS, just create a new account and a new team in your office. Then match the new account as team leader in the new team. Now you can use the credentials of this account and generate access tokens for your sync.</i>
 
 Every Authentication Provider has to provide the function `getToken()` and `getNewToken()` the second function is used by the API wrapper if the API responds with an error, that the access token expired, to try it with a new token. That is useful, when the Authentication Provider caches the access token and has no option to determine if it's still valid.
 
-### How to choose the right Auth Provider
+### How to choose the right main Auth Provider
 * if you have a predefined and active user: AuthProviderExpa
 * if you only want to authenticate active users: AuthProviderExpa (Remember: If you get an access token this does not mean that the user is active, so if you need to know that use the current_person endpoint to validate the token)
 * if you authenticate both active and non-active users: AuthProviderCombined
@@ -39,22 +43,22 @@ Try to use AuthProviderExpa and AuthProviderOP as much as possible. The AuthProv
 Especially if you want to authenticate only active users, use AuthProviderExpa and validate the token afterwards. The AuthProviderCombined would make a request more, to generate an OP token.
 
 ### Keep the GIS Identity session
-When a user access one of the frontends of the GIS he is redirected to the GIS Identity Service at auth.aiesec.org. This service opens a session for the user, whereby he do not need to login twice when he access another frontend. By now all three Authentication Providers can make use of this session. On the one hand this can improve the performance of your script. On the other hand you can also generate an access token without saving the user credentials, just by keeping the session file.
+When a user access one of the frontends of the GIS he is redirected to the GIS Identity Service at auth.aiesec.org. This service opens a session for the user, whereby he do not need to login twice when he access another frontend. By now all three main Authentication Providers can make use of this session. On the one hand this can improve the performance of your script. On the other hand you can also generate an access token without saving the user credentials, just by keeping the session file.
 
 You can set the filepath of the session via the function `setSession($path)`. The function `getSession()` returns the current session path. The session file must not exist beforehand, but the directory and the file must be writeable for PHP.
 
-If you want to generate an access token from an existing session without having the user credentials, instantiate the AuthProvider with the filepath to the session as first parameter and leave the second parameter empty or set it to null. When the session file is not existing this will produce a E_USER_ERROR php error. If the session is invalid the generation of a token will throw a InvalidCredentials Exception.
+If you want to generate an access token from an existing session without having the user credentials, instantiate on of the standard AuthProviders with the filepath to the session as first parameter and leave the second parameter empty or set it to null. When the session file does not exist this will produce a E_USER_ERROR php error. If the session is invalid the generation of a token will throw a InvalidCredentials Exception.
 
 Please make sure to call the function `setSession($path)` before you generate any access token. Everything else will work, but could lead to a inconsistent behaviour.
 
 ### helper functions
-- All three Authentication Providers support a boolean as third argument for the constructor. Setting this argument to false will disable the SSL Peer Verification. Set the second argument to `null` if you instantiate the AuthProvider with a session
-- All three Authentication Providers provide the function `getExpiresAt()`, which returns the timestamp until when the current access token is valid.
+- All three main Authentication Providers support a boolean as third argument for the constructor. Setting this argument to false will disable the SSL Peer Verification. Set the second argument to `null` if you instantiate the AuthProvider with a session
+- All three main Authentication Providers provide the function `getExpiresAt()`, which returns the timestamp until when the current access token is valid.
 - The `AuthProviderCombined` furthermore provides:
     - the functions `isOP()` and `isEXPA()` which return a bool depending on the scope of the token
     - the function `getType()` which returns 'EXPA' or 'OP' depending on the scope of the token
     - the function `getCurrentPerson()` which returns the current person object, because it have to load this to validate the token
-
+- The `AuthProviderShadow` provides the function `getAuthProvider()`, which returns the underlaying AuthProvider or null
 
 ## Class GIS
 The class GIS is the entry point to access AIESECs Global Information System from your project. The first argument must be an AuthProvider. The second parameter can either be empty, or the url of the API documentation, or an array containing the already parsed API documentation.
@@ -205,7 +209,17 @@ The PHP GIS Wrapper is tested with PHP unit. All the tests can be found in the f
 
 If you send a pull request, please make sure that your code is covered and run phpunit in the root folder before you commit. Normally phpunit will automatically recognize the file phpunit.xml in the root folder.
 
+## Providers
+Providers have to purpose to include the functionality of the GIS wrapper in a different context (e.g. a framework).
+
+Currently we support the PHP Framework Lumen and thereby also Laravel. Please check the README in the providers folder, for more details.
+
 # Changelog
+## 0.2.5
+- added AuthProviderShadow and AuthProviderNationalIdentity
+- added ServiceProvider for Lumen (should also work with Laravel)
+- added `currentPage()` and `setStartPage($page)` function to paged endpoints (tests still missing)
+- updated Unit Tests
 ## 0.2.4
 - Fixed some minor bugs in the API Endpoint
 ## 0.2.3
@@ -235,7 +249,7 @@ If you have any questions, feature wishes, problems or found a bug don't hesitat
 
 If you found a bug you can also directly open an issue in the github repository.
 
-If you integrated the PHP GIS Wrapper as Provider or Service in a framework or used it in one of your projects feel free to drop me a message to feature it here.
+If you integrated the PHP GIS Wrapper as Provider or Service in a framework or used it in one of your projects feel free to drop me a message to feature it here, or write a pull request to include your code in the providers folder.
 
 If you wrote another example just send a pull request
 

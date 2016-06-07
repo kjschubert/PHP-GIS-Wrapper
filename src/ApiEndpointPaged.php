@@ -47,6 +47,12 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
     private $_count;
 
     // $_currentPage is already declared in the class Endpoint for use in the get method
+    // $_perPage is already declared in the class Endpoint for use in the get method
+
+    /**
+     * @var int page to start on with foreach loop
+     */
+    private $_startPage;
 
     /**
      * APIEndpointPaged constructor.
@@ -108,7 +114,11 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
         if ($this->_currentItem >= $this->_pageItems) {
             $this->_currentPage++;
             if ($this->_currentPage <= $this->_pages) {
+                $expectedPage = $this->_currentPage;
                 $this->load();
+                if($this->_currentPage != $expectedPage) {
+                    throw new InvalidAPIResponseException("Got page " . $this->_currentPage . ' but expected page' . $expectedPage);
+                }
                 $this->_currentItem = 0;
             }
         }
@@ -147,19 +157,27 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
     public function rewind()
     {
         $this->_currentItem = 0;
-        $this->_currentPage = 1;
+        if($this->_startPage != null) {
+            $this->_currentPage = $this->_startPage;
+        } else {
+            $this->_currentPage = 1;
+        }
         $this->load();
     }
 
     /**
      * @return int number of elements with the current parameters
-     * @throws OperationNotAvailableException
-     * @throws ParameterRequiredException
+     * @throws \Exception
      */
     public function count() {
         $p = $this->_currentPage;
         $this->_currentPage = 1;
-        $res = $this->get();
+        try {
+            $res = $this->get();
+        } catch(\Exception $e) {
+            $this->_currentPage = $p;
+            throw $e;
+        }
         $this->_currentPage = $p;
         return $res->paging->total_items;
     }
@@ -169,5 +187,23 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
      */
     public function lastCount() {
         return $this->_count;
+    }
+
+    /**
+     * @return int number of the current page
+     */
+    public function currentPage() {
+        if($this->_currentPage != null) {
+            return $this->_currentPage;
+        } else {
+            return 1;
+        }
+    }
+
+    /**
+     * @param int $page page to start foreach loop with
+     */
+    public function setStartPage($page) {
+        $this->_startPage = $page;
     }
 }
