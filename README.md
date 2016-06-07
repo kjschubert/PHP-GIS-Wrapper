@@ -218,7 +218,7 @@ Currently we support the PHP Framework Lumen and thereby also Laravel. Please ch
 ## 0.2.5
 - added AuthProviderShadow and AuthProviderNationalIdentity
 - added ServiceProvider for Lumen (should also work with Laravel)
-- added `currentPage()` and `setStartPage($page)` function to paged endpoints (tests still missing)
+- added `currentPage()`, `setStartPage($page)` and `setPerPage($number)` function to paged endpoints (tests still missing)
 - updated Unit Tests
 
 ## 0.2.4

@@ -206,4 +206,11 @@ class APIEndpointPaged extends APIEndpoint implements \Iterator, \Countable
     public function setStartPage($page) {
         $this->_startPage = $page;
     }
+
+    /**
+     * @param int $number number of items per page
+     */
+    public function setPerPage($number) {
+        $this->_perPage = $number;
+    }
 }
