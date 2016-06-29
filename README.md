@@ -20,7 +20,7 @@ Please check the examples folder for a quick start. The explanations below are m
 The file `AuthProvider.php` provides an interface for Authentication Providers. The Purpose of an Authentication Provider is to provide an access token to access the GIS API.
 
 At the moment there are three main Authentication Providers:
-* `AuthProviderExpa($username, $password)` to get an access token like you would login to EXPA.
+* `AuthProviderEXPA($username, $password)` to get an access token like you would login to EXPA.
 * `AuthProviderOP($username, $password)` to get an access token like you would login to OP.
 * `AuthProviderCombined($username, $password)` this provider tries to get an EXPA token and if it is invalid returns an OP token.
 
@@ -33,14 +33,14 @@ Furthermore there are two special Authentication Providers
 Every Authentication Provider has to provide the function `getToken()` and `getNewToken()` the second function is used by the API wrapper if the API responds with an error, that the access token expired, to try it with a new token. That is useful, when the Authentication Provider caches the access token and has no option to determine if it's still valid.
 
 ### How to choose the right main Auth Provider
-* if you have a predefined and active user: AuthProviderExpa
-* if you only want to authenticate active users: AuthProviderExpa (Remember: If you get an access token this does not mean that the user is active, so if you need to know that use the current_person endpoint to validate the token)
+* if you have a predefined and active user: AuthProviderEXPA
+* if you only want to authenticate active users: AuthProviderEXPA (Remember: If you get an access token this does not mean that the user is active, so if you need to know that use the current_person endpoint to validate the token)
 * if you authenticate both active and non-active users: AuthProviderCombined
 * if you only need OP rights, or have only non-active users: AuthProviderOP
 
-Try to use AuthProviderExpa and AuthProviderOP as much as possible. The AuthProviderCombined directly gives you the current person object and thereby validates if the token is an EXPA or OP token, but therefore he needs some more requests.
+Try to use AuthProviderEXPA and AuthProviderOP as much as possible. The AuthProviderCombined directly gives you the current person object and thereby validates if the token is an EXPA or OP token, but therefore he needs some more requests.
 
-Especially if you want to authenticate only active users, use AuthProviderExpa and validate the token afterwards. The AuthProviderCombined would make a request more, to generate an OP token.
+Especially if you want to authenticate only active users, use AuthProviderEXPA and validate the token afterwards. The AuthProviderCombined would make a request more, to generate an OP token.
 
 ### Keep the GIS Identity session
 When a user access one of the frontends of the GIS he is redirected to the GIS Identity Service at auth.aiesec.org. This service opens a session for the user, whereby he do not need to login twice when he access another frontend. By now all three main Authentication Providers can make use of this session. On the one hand this can improve the performance of your script. On the other hand you can also generate an access token without saving the user credentials, just by keeping the session file.
@@ -65,7 +65,7 @@ The class GIS is the entry point to access AIESECs Global Information System fro
 
 For simple projects it is fine to leave the second argument empty.
 ```
-$user = new \GISwrapper\AuthProviderExpa($username, $password);
+$user = new \GISwrapper\AuthProviderEXPA($username, $password);
 $gis = new \GISwrapper\GIS($user);
 ```
 If you want to improve the performance of your project read more in the paragraph caching.
