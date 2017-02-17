@@ -133,24 +133,24 @@ class AuthProviderOP implements AuthProvider {
         curl_setopt($req, CURLOPT_COOKIEJAR, $this->_session);
 
         if($this->_session == "" || !file_exists($this->_session)) {
-            // if no session exists, initiate gis identity session as if the request would come from OP, so don't follow redirects to save time
-            curl_setopt($req, CURLOPT_FOLLOWLOCATION, false);
+            // if no session exists, initiate gis identity session as if the request would come from OP, follow redirect because authenciticy token is needed
+            curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
 
             // run the request up to three times if it fails
             $attempts = 0;
             $success = false;
             while(!$success && $attempts < 3) {
                 curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=43e49fdc8581a196cafa9122c2e102aa22df72a0e8aa6d5a73f27afa56fe8890');
-                if(curl_exec($req) !== false) {
+                $res = curl_exec($req);
+                if($res !== false) {
                     $success = true;
+                    preg_match( '/<meta.*content="(.*)".*name="csrf-token"/', $res, $match );
+                    $data .= "&authenticity_token=" . urlencode($match[1]);
                 }
                 $attempts++;
             }
 
             if($success) {
-                // if successful, perform login on gis identity while keeping session cookie, therefore we need to follow redirects
-                curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
-
                 // run the request up to three times if it fails
                 $attempts = 0;
                 $res = false;
