@@ -168,6 +168,11 @@ class AuthProviderCombined implements AuthProvider {
         // prepare curl request
         if($this->_session == "" || !file_exists($this->_session)) {    //login for new session
             $req = curl_init('https://auth.aiesec.org/users/sign_in');
+            curl_setopt($req, CURLOPT_RETURNTRANSFER, 1);
+            preg_match( '/<meta.*content="(.*)".*name="csrf-token"/', curl_exec($req), $match );
+            $data .= "&authenticity_token=" . urlencode($match[1]);
+            
+            $req = curl_init('https://auth.aiesec.org/users/sign_in');
             curl_setopt($req, CURLOPT_POST, true);
             curl_setopt($req, CURLOPT_POSTFIELDS, $data);
         } else {    // request EXPA token for existing session
