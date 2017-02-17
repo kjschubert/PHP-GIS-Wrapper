@@ -207,6 +207,7 @@ class AuthProviderEXPA implements AuthProvider {
     }
 
     private function proceedToken($res) {
+        $token = false;
         // get token and expiration date from cookie
         preg_match_all('/^Set-Cookie:\s*([^\n]*)/mi', $res, $cookies);
         foreach($cookies[1] as $c) {
@@ -217,7 +218,6 @@ class AuthProviderEXPA implements AuthProvider {
                 if(isset($cookie["Expires"])) $expire = @strtotime($cookie["Expires"]);
             }
         }
-
         // check if we got a token
         if($token !== false && $token !== null) {
             $this->_token = $token;
