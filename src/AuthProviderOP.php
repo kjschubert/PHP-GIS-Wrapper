@@ -140,7 +140,7 @@ class AuthProviderOP implements AuthProvider {
             $attempts = 0;
             $success = false;
             while(!$success && $attempts < 3) {
-                curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=43e49fdc8581a196cafa9122c2e102aa22df72a0e8aa6d5a73f27afa56fe8890');
+                curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=e34d5daf8c89172f7fabccbae8378eb3cb524cffc774c57afe2011b90d2e77e5');
                 $res = curl_exec($req);
                 if($res !== false) {
                     $success = true;
@@ -173,7 +173,7 @@ class AuthProviderOP implements AuthProvider {
         } else {
             // if we have a session, try to generate a token, therefore we need to follow redirects
             curl_setopt($req, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=43e49fdc8581a196cafa9122c2e102aa22df72a0e8aa6d5a73f27afa56fe8890');
+            curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=e34d5daf8c89172f7fabccbae8378eb3cb524cffc774c57afe2011b90d2e77e5');
 
             // run the request up to three times if it fails
             $attempts = 0;
@@ -195,7 +195,7 @@ class AuthProviderOP implements AuthProvider {
                     }
                 } else {
                     // retry if it fails
-                    curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=43e49fdc8581a196cafa9122c2e102aa22df72a0e8aa6d5a73f27afa56fe8890');
+                    curl_setopt($req, CURLOPT_URL, 'https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=e34d5daf8c89172f7fabccbae8378eb3cb524cffc774c57afe2011b90d2e77e5');
                 }
                 $attempts++;
             }
