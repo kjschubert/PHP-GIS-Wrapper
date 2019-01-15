@@ -1,3 +1,5 @@
+**I developed this project during my active time in AIESEC, which was around the time of EXPA v1 and the beginning of EXPA v2. As reported in the issues this code is not working with newer versions. I'm not an active member anymore, whereby this project is archived. I know of other entities, who maintained a fork of this project or developed something similar. Furthermore the tooling aroung swagger / OpenAPI is growing, so there might also be the right codegenerator to generate client code for your project**
+
 # PHP GIS Wrapper
 The PHP GIS Wrapper is a PHP library to connect your PHP projects with AIESEC's Global Information System.
 
